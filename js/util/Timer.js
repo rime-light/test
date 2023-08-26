@@ -35,4 +35,22 @@ export default class Timer {
             return true;
         });
     }
+    static frameCalc(fn) {
+        let start = null;
+        let runCount = 0;
+        const next = (timestamp) => {
+            if (!timestamp) {
+                requestAnimationFrame(next);
+                return;
+            }
+            if (!start) start = timestamp;
+            runCount++;
+            if (timestamp - start > 500) {
+                fn && fn(runCount * 2);
+                return;
+            }
+            requestAnimationFrame(next);
+        }
+        next();
+    }
 }

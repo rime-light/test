@@ -5,12 +5,6 @@
     <title>Demo</title>
     <link href="css/main.css" rel="stylesheet" type="text/css"/>
     <script src="js/base.js"></script>
-    <script type="module">
-        import {stop, init, changeQuality} from "./js/main.js";
-        window.stop = stop;
-        window.init = init;
-        window.changeQuality = changeQuality;
-    </script>
     <script type="module" src="js/main.js"></script>
     <script src="js/spellCard/FreezeStar.js"></script>
 </head>
@@ -18,25 +12,25 @@
 <div id="container" class="layout-h">
     <canvas id="items" class="game" width="0" height="0"></canvas>
     <div id="options" class="layout-v">
-        <button onclick="init()">刷新</button>
-        <button onclick="stop()">停止</button>
+        <button id="reload">刷新</button>
+        <button id="stop">停止</button>
         <div class="layout-v block">
             <label>
-                <input type="radio" name="quality" value="low" onchange="changeQuality(this.value)">
+                <input type="radio" name="quality" value="low">
                 <span>低画质</span>
             </label>
             <label>
-                <input type="radio" name="quality" value="medium" onchange="changeQuality(this.value)">
+                <input type="radio" name="quality" value="medium">
                 <span>中画质</span>
             </label>
             <label>
-                <input type="radio" name="quality" value="high" onchange="changeQuality(this.value)" checked>
+                <input type="radio" name="quality" value="high" checked>
                 <span>高画质</span>
             </label>
         </div>
         <label class="layout-v block">
             <span class="layout-h">
-                <input type="checkbox" onchange="frameLocked = this.checked">
+                <input type="checkbox" id="frame-control">
                 <span>帧率控制</span>
             </span>
             <span style="font-size: 10px">(若帧率正常请关闭)</span>

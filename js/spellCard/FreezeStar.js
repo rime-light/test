@@ -13,6 +13,9 @@ function createSingle(angle) {
             baseSpeed: 18,
             move() {
                 this.frame++;
+                if (this.frame === 10) {
+                    this.angle += (i & 1 ? 1: -1) * PI / Math.min(way / 5 - 1);
+                }
                 let speed = this.baseSpeed / Math.sqrt(this.frame);
                 this.pos.x += speed * Math.sin(this.angle);
                 this.pos.y += speed * Math.cos(this.angle);
@@ -27,7 +30,7 @@ function createWave() {
     if (frame >= Math.min(18, layer + 5) * waitTime) nextWave();
     if (currentLayer >= layer) return;
     if (frame % waitTime === 0) {
-        createSingle(angle + (currentLayer & 1 ? 0 : PI / way));
+        createSingle(angle + (currentLayer & 1) ? 0 : PI / way);
         currentLayer++;
     }
 }

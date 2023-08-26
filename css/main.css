@@ -22,7 +22,7 @@ body {
     margin: 10px;
 }
 .game {
-    background: transparent;
+    background:  transparent;
     border: 1px solid black;
 }
 #container {
@@ -40,7 +40,19 @@ button {
     width: 100px;
     height: 30px;
     font-size: 15px;
+    background-color: #e3e3e3;
     border: 2px solid gray;
     border-radius: 10px;
     outline: none;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    border-width: 3px;
+    background-color: #f0f0f0;
+}
+
+button:active {
+    transform: scale(0.97, 0.97);
+    background-color: #d8d8d8;
 }
