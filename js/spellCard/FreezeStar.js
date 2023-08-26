@@ -30,7 +30,7 @@ function createWave() {
     if (frame >= Math.min(18, layer + 5) * waitTime) nextWave();
     if (currentLayer >= layer) return;
     if (frame % waitTime === 0) {
-        createSingle(angle + (currentLayer & 1) ? 0 : PI / way);
+        createSingle(angle + (currentLayer & 1 ? 0 : PI / way));
         currentLayer++;
     }
 }
