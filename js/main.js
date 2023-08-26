@@ -61,7 +61,7 @@ export function init() {
     freezeStarInit();
     setTimeout(() => {
         playing = true;
-        calcFrame();
+        requestAnimationFrame(calcFrame);
     }, 50);
 }
 
@@ -84,8 +84,18 @@ function animationInit() {
     animations.hitPoint.run();
 }
 
-function calcFrame() {
+function calcFrame(timestamp) {
     if (!playing) return;
+
+    if (frameLocked) {
+        if (!timestamp) timestamp = prevTime;
+        let interval = 1000 / FPS, delta = timestamp - prevTime;
+        if (delta < interval) {
+            requestAnimationFrame(calcFrame);
+            return;
+        }
+        prevTime = timestamp - delta % interval;
+    }
 
     const stopPlayerAnimation = () => {
         animations.playerNormal.stop();
@@ -163,6 +173,8 @@ function draw(bgColor) {
 }
 
 window.onload = function () {
+    prevTime = 0;
+    frameLocked = false;
     canvas = document.getElementById("items");
     ctx = canvas.getContext("2d");
     let dpr = window.devicePixelRatio;

@@ -1,8 +1,10 @@
 const
     PI = Math.PI,
+    FPS = 60,
     W = 384, H = 450,
     diagonalRate = 1 / Math.sqrt(2),
     limitDistance = { top: 24, bottom: 16, left: 8, right: 8 };
+let prevTime, frameLocked;
 let background, hitPoint, playerStyle, bulletStyle;
 let canvas, ctx, animations;
 let player, bullets;

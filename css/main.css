@@ -18,6 +18,9 @@ body {
     align-items: center;
     justify-content: center;
 }
+.block {
+    margin: 10px;
+}
 .game {
     background: transparent;
     border: 1px solid black;

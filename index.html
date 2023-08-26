@@ -20,7 +20,7 @@
     <div id="options" class="layout-v">
         <button onclick="init()">刷新</button>
         <button onclick="stop()">停止</button>
-        <div class="layout-v">
+        <div class="layout-v block">
             <label>
                 <input type="radio" name="quality" value="low" onchange="changeQuality(this.value)">
                 <span>低画质</span>
@@ -34,6 +34,13 @@
                 <span>高画质</span>
             </label>
         </div>
+        <label class="layout-v block">
+            <span class="layout-h">
+                <input type="checkbox" onchange="frameLocked = this.checked">
+                <span>帧率控制</span>
+            </span>
+            <span style="font-size: 10px">(若帧率正常请关闭)</span>
+        </label>
     </div>
 </div>
 </body>
