@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo</title>
+    <link href="css/main.css" rel="stylesheet" type="text/css"/>
+    <script src="js/base.js"></script>
+    <script type="module">
+        import {stop, init, changeQuality} from "./js/main.js";
+        window.stop = stop;
+        window.init = init;
+        window.changeQuality = changeQuality;
+    </script>
+    <script type="module" src="js/main.js"></script>
+    <script src="js/spellCard/FreezeStar.js"></script>
+</head>
+<body class="layout-v">
+<div id="container" class="layout-h">
+    <canvas id="items" class="game" width="0" height="0"></canvas>
+    <div id="options" class="layout-v">
+        <button onclick="init()">刷新</button>
+        <button onclick="stop()">停止</button>
+        <div class="layout-v">
+            <label>
+                <input type="radio" name="quality" value="low" onchange="changeQuality(this.value)">
+                <span>低画质</span>
+            </label>
+            <label>
+                <input type="radio" name="quality" value="medium" onchange="changeQuality(this.value)">
+                <span>中画质</span>
+            </label>
+            <label>
+                <input type="radio" name="quality" value="high" onchange="changeQuality(this.value)" checked>
+                <span>高画质</span>
+            </label>
+        </div>
+    </div>
+</div>
+</body>
+</html>
