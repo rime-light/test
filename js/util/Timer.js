@@ -6,7 +6,7 @@ export default class Timer {
             return 0;
         }
         let id = this.waiting.length > 0 ? this.waiting.at(-1).id + 1 : 0,
-            timestamp = `${random(0, 65536).toString(16)}${Date.now().toString(16)}`;
+            timestamp = `${randomInt(0, 65535).toString(16)}${Date.now().toString(16)}`;
         this.waiting.push({
             id,
             fn,

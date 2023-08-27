@@ -1,6 +1,9 @@
 import CanvasAnimation from "./util/Animation.js";
 import FileLoader from "./util/FileLoader.js";
 import Timer from "./util/Timer.js";
+import Entity, {BaseMove, BaseCheck} from "./item/Entity.js"
+import FreezeStar from "./spellCard/FreezeStar.js";
+import SparklingWater from "./spellCard/SparklingWater.js";
 
 class App {
     constructor() {
@@ -140,7 +143,7 @@ class App {
         bulletStyle = {};
         FileLoader.queue(FileLoader.loadPng, "player/sloweffect", (img) => {
             let size = 4;
-            hitPoint = {
+            hitbox = {
                 image: FileLoader.saveAsCanvas(img, 0, 0, size, size),
                 size: FileLoader.size(size)
             };
@@ -149,8 +152,9 @@ class App {
         FileLoader.queue(FileLoader.loadPng, `player/player${playerId}/pl${playerId}`, (img) => {
             playerStyle.push(this.createPlayerStyle(img));
         });
-        FileLoader.queue(FileLoader.loadPng, `bullet/bullet1`, (img) => {
-            bulletStyle.water = this.createBulletStyle(img, 24);
+        FileLoader.queue(FileLoader.loadPng, `bullet/bullet2`, (img) => {
+            bulletStyle.water = this.createBulletStyle(img, 8, 10, 2, 2, 24);
+            bulletStyle.middle = this.createBulletStyle(img, 6, 2, 2, 2, 32);
         });
         FileLoader.loadList(this.init, (err) => {
             let msg = `${err.failList.length}个资源加载失败`;
@@ -167,7 +171,6 @@ class App {
         this.init = this.init.bind(this);
         this.stop = this.stop.bind(this);
         this.draw = this.draw.bind(this);
-        this.saveWrap = this.saveWrap.bind(this);
         this.calcFrame = this.calcFrame.bind(this);
     }
 
@@ -182,9 +185,9 @@ class App {
         };
     }
 
-    createBulletStyle(img, size) {
+    createBulletStyle(img, x, y, w, h, size) {
         return {
-            image: FileLoader.saveAsCanvas(img, 8, 13, 2, 2, size, size),
+            image: FileLoader.saveAsCanvas(img, x, y, w, h, size, size),
             size: size
         };
     }
@@ -206,12 +209,6 @@ class App {
         animations.hitboxSpin.run();
         this.animations = animations;
     }
-    
-    saveWrap(fn) {
-        this.ctx.save();
-        fn();
-        this.ctx.restore();
-    }
 
     init() {
         this.stop();
@@ -231,7 +228,7 @@ class App {
         };
         this.animationInit();
         bullets = [];
-        freezeStarInit();
+        this.spellCard = new SparklingWater();
         setTimeout(() => {
             this.playing = true;
             requestAnimationFrame(this.calcFrame);
@@ -275,13 +272,12 @@ class App {
         if (player.pos.y > H - limitDistance.bottom) player.pos.y = H - limitDistance.bottom;
         else if (player.pos.y < limitDistance.top) player.pos.y = limitDistance.top;
 
-        frame++;
-        createWave();
-
+        this.spellCard.nextFrame();
         let biu = false;
         bullets = bullets.filter((bullet) => {
-            if (!bullet.move()) return false;
-            if (isCircleCrash(player.pos, bullet.pos, player.size + bullet.size)) {
+            bullet.move();
+            if (bullet.cleared()) return false;
+            if (BaseCheck.isCrash(player, bullet)) {
                 biu = true;
                 // return false;
             }
@@ -314,23 +310,25 @@ class App {
         }
         animations.hitboxSpin.nextFrame((angleStep) => {
             let angle = 2 * PI * angleStep / animations.hitboxSpin.step;
+            const turn = (scale) => {
+                ctx.save();
+                ctx.translate(player.pos.x, player.pos.y);
+                if (scale !== 1) ctx.scale(scale, scale);
+                ctx.rotate(angle);
+                ctx.drawImage(hitbox.image, calcX(hitbox), calcY(hitbox));
+                ctx.rotate(-2 * angle);
+                ctx.drawImage(hitbox.image, calcX(hitbox), calcY(hitbox));
+                ctx.restore();
+            }
             animations.hitboxShow.nextFrame((step) => {
                 if (step === 0) return;
-                if (step === animations.hitboxShow.step - 1) {
-                    ctx.drawImage(hitPoint.image, calcX(player, hitPoint), calcY(player, hitPoint));
-                    return;
-                }
-                this.saveWrap(() => {
-                    let scale = player.slowMove ?
-                        step > animations.hitboxShow.step - 3 ?
-                            0.9 + (animations.hitboxShow.step - step) / 10
-                            : 1.2 * step / (animations.hitboxShow.step - 3)
-                        : step / animations.hitboxShow.step;
-                    ctx.translate(player.pos.x, player.pos.y);
-                    ctx.scale(scale, scale);
-                    ctx.rotate(angle);
-                    ctx.drawImage(hitPoint.image, -hitPoint.size / 2, -hitPoint.size / 2);
-                });
+                if (step === animations.hitboxShow.step - 1) turn(1);
+                else turn(player.slowMove ?
+                    step > animations.hitboxShow.step - 3 ?
+                        0.9 + (animations.hitboxShow.step - step) / 10
+                        : 1.2 * step / (animations.hitboxShow.step - 3)
+                    : step / animations.hitboxShow.step
+                );
             }, !player.slowMove);
         });
     }

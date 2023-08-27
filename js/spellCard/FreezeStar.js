@@ -1,51 +1,59 @@
-let frame;
-let way, layer, waitTime;
-let angle, currentLayer;
-function createSingle(angle) {
-    for (let i = 0; i < way; i++) {
-        // break;
-        bullets.push({
-            frame: 0,
-            size: 4,
-            style: bulletStyle.water,
-            pos: { x: W / 2, y: H / 4 },
-            angle: angle + i * 2 * PI / way,
-            baseSpeed: 18,
-            move() {
-                this.frame++;
-                if (this.frame === 10) {
-                    this.angle += (i & 1 ? 1: -1) * PI / Math.min(way / 5 - 1);
-                }
-                let speed = this.baseSpeed / Math.sqrt(this.frame);
-                this.pos.x += speed * Math.sin(this.angle);
-                this.pos.y += speed * Math.cos(this.angle);
-                return !(this.pos.x > W + this.size || this.pos.x < -this.size ||
-                    this.pos.y > H + this.size || this.pos.y < -this.size);
+import Entity, {BaseCheck, BaseMove} from "../item/Entity.js";
+import SpellCard, {createWay} from "./SpellCard.js";
+
+export default class FreezeStar extends SpellCard {
+    constructor() {
+        super({
+            basePos: { x: W / 2, y: H / 4 },
+            value: {
+                layer: 6 - 1
+            },
+            currentValue: {
+                layer: 0
             }
         });
+        this.way = 60 - 5;
+        this.waitTime = 12;
+        this.angle = 0;
+        this.nextWave();
     }
-}
-
-function createWave() {
-    if (frame >= Math.min(18, layer + 5) * waitTime) nextWave();
-    if (currentLayer >= layer) return;
-    if (frame % waitTime === 0) {
-        createSingle(angle + (currentLayer & 1 ? 0 : PI / way));
-        currentLayer++;
+    nextFrame() {
+        super.nextFrame();
+        const {way, waitTime, frame} = this;
+        const layer = this.value.layer, currentLayer = this.currentValue.layer
+        if (this.frame >= Math.min(18, layer + 5) * waitTime)
+            this.nextWave();
+        if (currentLayer < layer && frame % waitTime === 0) {
+            this.createSingle(this.angle + (currentLayer & 1 ? 0 : PI / way));
+            this.currentValue.layer++;
+        }
     }
-}
-
-function nextWave() {
-    frame = 0;
-    way = Math.min(80, way + 5);
-    layer = Math.min(16, layer + 1);
-    angle = PI * random(0, 359) / 180;
-    currentLayer = 0;
-}
-
-function freezeStarInit() {
-    way = 60;
-    layer = 5;
-    waitTime = 12;
-    nextWave();
+    createSingle(angle) {
+        const {basePos, way} = this;
+        for (let i = 0; i < way; i++) {
+            // break;
+            let bullet = new Entity({
+                frame: 0,
+                size: 4,
+                style: bulletStyle.water,
+                pos: {...basePos},
+                basePos: {...basePos},
+                angle: createWay(angle, way, i),
+                baseSpeed: 18
+            });
+            bullet.setMove((item) => {
+                BaseMove.speedAngle(item, item.angle, item.baseSpeed / Math.max(Math.sqrt(item.frame), 1));
+                // if (item.frame === 40) BaseMove.shootTo(item);
+            });
+            bullet.setClearedCheck(BaseCheck.outOfScreen);
+            bullets.push(bullet);
+        }
+    }
+    nextWave() {
+        super.nextWave();
+        this.way = Math.min(80, this.way + 5);
+        this.angle = PI * randomInt(0, 359) / 180;
+        this.value.layer = Math.min(16, this.value.layer + 1);
+        this.currentValue.layer = 0;
+    }
 }
