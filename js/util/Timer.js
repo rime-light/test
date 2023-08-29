@@ -1,6 +1,7 @@
 export default class Timer {
     static waiting = [];
-    static wait(fn, frame) {
+    static wait(fn, frame, who) {
+        who && (fn = fn.bind(who));
         if (frame <= 0) {
             fn();
             return 0;
@@ -26,14 +27,16 @@ export default class Timer {
         }
     }
     static nextFrame() {
+        let runList = [];
         this.waiting = this.waiting.filter((single) => {
             single.currentFrame++;
             if (single.currentFrame >= single.frame) {
-                single.fn();
+                runList.push(single.fn);
                 return false;
             }
             return true;
         });
+        runList.forEach((fn) => fn());
     }
     static frameCalc(fn) {
         let start = null;

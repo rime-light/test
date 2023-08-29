@@ -8,7 +8,14 @@ export default class Entity {
         this.basePos = 0;
         this.baseSpeed = 0;
         this.angle = 0;
+        this.drawAngle = null;
         Object.assign(this, props);
+    }
+    move() {
+        return false;
+    }
+    cleared() {
+        return false;
     }
     setMove(fn) {
         let moveFn = () => {
@@ -21,28 +28,24 @@ export default class Entity {
         let clearedFn = () => fn(this);
         this.cleared = clearedFn.bind(this);
     }
-}
-
-export class BaseMove {
-    static speedXY(entity) {
-        entity.pos.x += entity.speed.x;
-        entity.pos.y += entity.speed.y;
+    speedXY() {
+        this.pos.x += this.speed.x;
+        this.pos.y += this.speed.y;
     };
-    static speedAngle(entity, angle, speed) {
-        angle = angle ?? entity.angle;
-        speed = speed ?? entity.baseSpeed;
-        entity.pos.x += speed * Math.cos(angle);
-        entity.pos.y += speed * Math.sin(angle);
+    speedAngle(angle, speed) {
+        angle = angle ?? this.angle;
+        speed = speed ?? this.baseSpeed;
+        this.pos.x += speed * Math.cos(angle);
+        this.pos.y += speed * Math.sin(angle);
     }
-    static angleChange(entity, origin, reverse) {
-        origin = origin ?? entity.basePos;
-        if (equal(entity.pos.x, origin.x) && equal(entity.pos.y, origin.y)) return;
-        entity.angle = Math.atan2(entity.pos.y - origin.y, entity.pos.x - origin.x);
-        if (reverse) entity.angle += PI;
+    angleChange(origin, reverse) {
+        origin = origin ?? this.basePos;
+        this.angle = posAngle(origin, this.pos, this.angle);
+        if (reverse) this.angle += PI;
     }
-    static shootTo(entity, pos) {
+    shootTo(pos) {
         pos = pos ?? player.pos;
-        BaseMove.angleChange(entity, pos, true);
+        this.angleChange(pos, true);
     }
 }
 

@@ -1,7 +1,7 @@
 const
     PI = Math.PI,
     FPS = 60,
-    W = 384, H = 450,
+    W = 384, H = 448,
     diagonalRate = 1 / Math.sqrt(2),
     limitDistance = { top: 24, bottom: 16, left: 8, right: 8 };
 let background, hitbox, playerStyle, bulletStyle;
@@ -23,20 +23,21 @@ function equal(a, b) {
     return Math.abs(a - b) < Number.EPSILON;
 }
 
-function angle() {
-    
+function posAngle(p1, p2, defaultValue) {
+    if (equal(p1.x, p2.x) && equal(p1.y, p2.y) && defaultValue) return defaultValue;
+    return Math.atan2(p2.y - p1.y, p2.x - p1.x);
 }
 
 function x(item) {
-    return calcX(item, item.style);
+    return calcX(item.pos, item.style);
 }
 function calcX(posItem, sizeItem) {
-    return arguments.length === 1 ? -(posItem.size ?? posItem.width) / 2 : posItem.pos.x - (sizeItem.size ?? sizeItem.width) / 2;
+    return arguments.length === 1 ? -(posItem.size ?? posItem.width) / 2 : posItem.x - (sizeItem.size ?? sizeItem.width) / 2;
 }
 
 function y(item) {
-    return calcY(item, item.style);
+    return calcY(item.pos, item.style);
 }
 function calcY(posItem, sizeItem) {
-    return arguments.length === 1 ? -(posItem.size ?? posItem.height) / 2 :posItem.pos.y - (sizeItem.size ?? sizeItem.height) / 2;
+    return arguments.length === 1 ? -(posItem.size ?? posItem.height) / 2 : posItem.y - (sizeItem.size ?? sizeItem.height) / 2;
 }

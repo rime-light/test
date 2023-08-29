@@ -1,4 +1,4 @@
-import Entity, {BaseCheck, BaseMove} from "../item/Entity.js";
+import Entity, {BaseCheck} from "../item/Entity.js";
 import SpellCard, {createWay} from "./SpellCard.js";
 
 export default class FreezeStar extends SpellCard {

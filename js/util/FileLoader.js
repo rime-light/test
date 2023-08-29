@@ -49,25 +49,49 @@ export default class FileLoader {
             })
         });
     }
-    static saveAsCanvas(img, x, y, w, h, sw, sh) {
+    static saveAsCanvas(img, x, y, w, h, options) {
+        options = options ?? {};
         x *= this.px;
         y *= this.px;
         w *= this.px;
         h *= this.px;
-        sw = sw ?? w;
-        sh = sh ?? h;
+        let sw = options.sw ?? w, sh = options.sh ?? h;
         let screen = document.createElement("canvas");
         let painter = screen.getContext("2d");
         screen.width = sw;
         screen.width = sh;
+        painter.save();
+        options.opacity && (painter.globalAlpha = options.opacity);
         painter.drawImage(img, x, y, w, h, 0, 0, sw, sh);
+        painter.restore();
+        // options.hue && hsl("hue", options.hue);
+        // options.saturation && hsl("saturation", options.saturation);
+        if (options.luminosity) {
+            let imgData = painter.getImageData(0, 0, sw, sh);
+            let data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                let k = i + 3;
+                if (data[k] === 0) continue;
+                if (data[k] < 255 && options.luminosity > 0) {
+                    data[k] *= 1 - options.luminosity / 100;
+                    if (data[k] < 0) data[k] = 0;
+                }
+                for (let j = 0; j < 3; j++) {
+                    k = i + j;
+                    data[k] += Math.round(options.luminosity * 255 / 100);
+                    if (data[k] < 0) data[k] = 0;
+                    else if (data[k] > 255) data[k] = 255;
+                }
+            }
+            painter.putImageData(imgData, 0, 0);
+        }
         return screen;
     }
-    static saveAsCanvasList(img, x, y, w, h, rowCount, columnCount, sw, sh) {
+    static saveAsCanvasList(img, x, y, w, h, rowCount, columnCount, options) {
         let canvasList = [];
         for (let i = 0; i < rowCount; i++) {
             for (let j = 0; j < columnCount; j++) {
-                canvasList.push(this.saveAsCanvas(img, x + w * j, y + h * i, w, h, sw, sh));
+                canvasList.push(this.saveAsCanvas(img, x + w * j, y + h * i, w, h, options));
             }
         }
         return canvasList;

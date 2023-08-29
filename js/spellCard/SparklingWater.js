@@ -1,100 +1,94 @@
-import Entity, {BaseCheck, BaseMove} from "../item/Entity.js";
+import Entity, {BaseCheck} from "../item/Entity.js";
 import SpellCard, {createWay} from "./SpellCard.js";
+import Timer from "../util/Timer.js";
 
 export default class SparklingWater extends SpellCard {
     constructor() {
         super({
             basePos: { x: W / 2, y: H / 6 },
             value: {
-                middle: 7,
-                small: 200,
+                middle: 6,
+                small: 15,
                 row: 15,
                 waitForStop: 300
             },
-            currentValue: {
-                middle: 0,
-                small: 0,
-                row: 0,
-                waitForStop: 0
-            },
             waitTime: {
                 middle: 20,
-                small: 30
+                small: 20,
+                row: 20
             }
         });
-        this.offset = 0;
-        this.rowTimeOffset = 12;
+        this.wave = 0;
         this.nextWave();
     }
     nextFrame() {
         super.nextFrame();
-        if (this.frame === 680) {
+        if (this.frameEqual(480)) {
             this.nextWave();
             return;
         }
-        if (this.value.row === this.currentValue.row) {
-            this.currentValue.waitForStop++;
+        if (this.frameEqual(1)) {
+            let range = H / (2 * (this.value.row - 1));
+            this.createSin(0, {
+                priority: this.wave,
+                offsetX: PI / 2,
+                offsetY: random(-range, range)
+            });
         }
-        let wait = this.currentValue.waitForStop;
-        if (this.frameMatch(this.rowTimeOffset)
-            && (wait >= this.value.waitForStop || wait === 0)
-        ) this.currentValue.row++;
-        if (this.frameMatch(this.waitTime.small)) this.createSin();
-        if (this.frame > 400
-            && this.frameMatch(this.waitTime.middle)
-            && this.currentValue.middle < this.value.middle
-        ) this.createShootTo();
+        if (this.frameEqual(360)) this.createShootTo(0);
     }
-    createSin() {
-        const row = this.value.row, currentRow = this.currentValue.row, size = 4;
-        // console.log(currentRow);
-        const summon = (i) => {
-            let dir = (i & 1) === 1;
+    sinNext(step, other) {
+        if (step >= this.value.small) return;
+        const { row, priority, offsetY } = other;
+        const expand = 30,
+            rowCount = this.value.row,
+            dir = ((priority + row) & 1) === 1;
+        for (let i = 0; i < 2; i++) {
+            let upDown = (i === 0);
             let bullet = new Entity({
-                size,
+                size: 4,
                 style: bulletStyle.water,
-                pos: { x: dir ? -2 * size : W + 2 * size, y: 0 },
-                basePos: { x: this.offset, y: createWay(H / 2, row, i, false, H / (row - 2)) },
-                baseSpeed: 0.8 * (dir ? 1 : -1)
+                pos: { x: (dir ? -expand : W + expand), y: offsetY + createWay(H / 2, rowCount, row, 35) },
+                angle: (dir ? 0 : PI),
+                angleSpeed: PI / 235 * (upDown ? 1 : -1),
+                baseSpeed: 1.35
             });
             bullet.setMove((item) => {
-                item.pos.x += item.baseSpeed;
-                item.pos.y = item.basePos.y + 30 * Math.sin(item.pos.x / (12 * PI) + item.basePos.x);
+                if (Math.abs(item.angle - (dir ? 0 : PI)) > Math.abs(item.angleSpeed * 60)) item.angleSpeed *= -1;
+                item.angle += item.angleSpeed;
+                item.speedAngle();
             });
-            bullet.setClearedCheck((item) => BaseCheck.timeOver(item, 500));
+            bullet.setClearedCheck((item) => BaseCheck.timeOver(item, 480));
             bullets.push(bullet);
         }
-        if (currentRow > row)
-            for (let i = 2 * row - currentRow; i >= 0; i--) summon(row - i);
-        else for (let i = 0; i < currentRow; i++) summon(i);
+        Timer.wait(() => this.sinNext(step + 1, other), this.waitTime.small);
     }
-    createShootTo() {
-        this.currentValue.middle++;
+    createSin(step, other) {
+        if (step >= this.value.row) return;
+        this.sinNext(0, { row: step, ...other });
+        Timer.wait(() => this.createSin(step + 1, other), this.waitTime.row);
+    }
+    createShootTo(step) {
+        if (step >= this.value.middle) return;
         let way = 9, pos = this.basePos;
-        let calculator = { pos: {...pos}, angle: 0 };
-        BaseMove.shootTo(calculator);
+        let angle = posAngle(pos, player.pos);
         for (let i = 0; i < way; i++) {
             let bullet = new Entity({
                 size: 8.5,
                 style: bulletStyle.middle,
                 pos: {...pos},
                 basePos: {...pos},
-                angle: createWay(calculator.angle, way, i, false, PI / 20),
-                baseSpeed: 2.4
+                angle: createWay(angle, way, i, PI / 18),
+                baseSpeed: 2.2
             });
-            bullet.setMove(BaseMove.speedAngle);
+            bullet.setMove((item) => item.speedAngle());
             bullet.setClearedCheck(BaseCheck.outOfScreen);
             bullets.push(bullet);
         }
+        Timer.wait(() => this.createShootTo(step + 1), this.waitTime.middle);
     }
     nextWave() {
         super.nextWave();
-        this.offset = random(-PI, PI);
-        this.setCurrentValue({
-            middle: 0,
-            small: 0,
-            row: 0,
-            waitForStop: 0
-        });
+        this.wave++;
     }
 }

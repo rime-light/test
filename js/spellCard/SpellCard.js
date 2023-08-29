@@ -5,6 +5,7 @@ export default class SpellCard {
         this.frame = 0;
         this.value = {};
         this.currentValue = {};
+        this.waitTime = {};
         Object.assign(this, props);
     }
     setValue(value) {
@@ -16,6 +17,9 @@ export default class SpellCard {
     setBothValue(value) {
         this.setValue(value);
         this.setCurrentValue(value);
+    }
+    frameEqual(value) {
+        return this.frame === value;
     }
     frameMatch(value) {
         return this.frame % value === 0;
@@ -29,7 +33,6 @@ export default class SpellCard {
     }
 }
 
-export function createWay(angle, way, current, isCircle, interval) {
-    isCircle = isCircle ?? true;
-    return angle + ((isCircle || !interval) ? 2 * PI * current / way : (current - (way - 1) / 2) * interval);
+export function createWay(angle, way, current, interval) {
+    return angle + (interval ? (current - (way - 1) / 2) * interval : (2 * PI * current / way));
 }

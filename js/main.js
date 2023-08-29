@@ -1,7 +1,7 @@
 import CanvasAnimation from "./util/Animation.js";
 import FileLoader from "./util/FileLoader.js";
 import Timer from "./util/Timer.js";
-import Entity, {BaseMove, BaseCheck} from "./item/Entity.js"
+import Entity, {BaseCheck} from "./item/Entity.js"
 import FreezeStar from "./spellCard/FreezeStar.js";
 import SparklingWater from "./spellCard/SparklingWater.js";
 
@@ -97,7 +97,13 @@ class App {
                 event.preventDefault();
         });
         document.getElementById("reload").addEventListener("click", this.init);
-        document.getElementById("stop").addEventListener("click", this.stop);
+        document.getElementById("stop").addEventListener("click", () => {
+            if (this.playing) this.playing = false;
+            else {
+                this.playing = true;
+                requestAnimationFrame(this.calcFrame);
+            }
+        });
 
         let storageValue = localStorage.getItem("quality");
         ctx.imageSmoothingQuality = "high";
@@ -144,7 +150,7 @@ class App {
         FileLoader.queue(FileLoader.loadPng, "player/sloweffect", (img) => {
             let size = 4;
             hitbox = {
-                image: FileLoader.saveAsCanvas(img, 0, 0, size, size),
+                image: FileLoader.saveAsCanvas(img, 0, 0, size, size, { opacity: 0.8 }),
                 size: FileLoader.size(size)
             };
         });
@@ -152,9 +158,12 @@ class App {
         FileLoader.queue(FileLoader.loadPng, `player/player${playerId}/pl${playerId}`, (img) => {
             playerStyle.push(this.createPlayerStyle(img));
         });
+        FileLoader.queue(FileLoader.loadPng, `bullet/bullet1`, (img) => {
+            bulletStyle.water = this.createBulletStyle(img, 8, 13, 2, 2, 32, true, {luminosity: 20});
+        });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet2`, (img) => {
-            bulletStyle.water = this.createBulletStyle(img, 8, 10, 2, 2, 24);
-            bulletStyle.middle = this.createBulletStyle(img, 6, 2, 2, 2, 32);
+            bulletStyle.knife = this.createBulletStyle(img, 8, 6, 2, 2, 32, true);
+            bulletStyle.middle = this.createBulletStyle(img, 6, 2, 2, 2, 32, false);
         });
         FileLoader.loadList(this.init, (err) => {
             let msg = `${err.failList.length}个资源加载失败`;
@@ -169,7 +178,6 @@ class App {
 
     functionBind() {
         this.init = this.init.bind(this);
-        this.stop = this.stop.bind(this);
         this.draw = this.draw.bind(this);
         this.calcFrame = this.calcFrame.bind(this);
     }
@@ -185,10 +193,10 @@ class App {
         };
     }
 
-    createBulletStyle(img, x, y, w, h, size) {
+    createBulletStyle(img, x, y, w, h, size, angle, options) {
         return {
-            image: FileLoader.saveAsCanvas(img, x, y, w, h, size, size),
-            size: size
+            size, angle,
+            image: FileLoader.saveAsCanvas(img, x, y, w, h, { sw: size, sh: size, ...options })
         };
     }
 
@@ -211,7 +219,8 @@ class App {
     }
 
     init() {
-        this.stop();
+        this.playing = false;
+        Timer.waiting = [];
         player = {
             style: playerStyle[0],
             size: 3,
@@ -233,10 +242,6 @@ class App {
             this.playing = true;
             requestAnimationFrame(this.calcFrame);
         }, 50);
-    }
-
-    stop() {
-        this.playing = false;
     }
 
     calcFrame(timestamp) {
@@ -272,6 +277,7 @@ class App {
         if (player.pos.y > H - limitDistance.bottom) player.pos.y = H - limitDistance.bottom;
         else if (player.pos.y < limitDistance.top) player.pos.y = limitDistance.top;
 
+        Timer.nextFrame();
         this.spellCard.nextFrame();
         let biu = false;
         bullets = bullets.filter((bullet) => {
@@ -283,14 +289,14 @@ class App {
             }
             return true;
         });
-        this.draw(biu ? "#ff8f8f7f" : "#d8d8ff7f");
+        this.draw(biu);
         requestAnimationFrame(this.calcFrame);
     }
 
-    draw(bgColor) {
+    draw(biu) {
         const {ctx, animations} = this;
-        ctx.drawImage(background, 0, 0, W, H);
-        ctx.fillStyle = bgColor;
+        ctx.drawImage(background, 0, 0);
+        ctx.fillStyle = biu ? "#ff00003f" : "#afafff3f";
         ctx.fillRect(0, 0, W, H);
         animations.playerNormal.nextFrame((step) => {
             ctx.drawImage(player.style.normal[step], x(player), y(player));
@@ -306,7 +312,13 @@ class App {
                 : (step) => ctx.drawImage(player.style.right[step + 4], x(player), y(player))
         );
         for (const bullet of bullets) {
-            ctx.drawImage(bullet.style.image, x(bullet), y(bullet));
+            if (bullet.style.angle) {
+                ctx.save();
+                ctx.translate(bullet.pos.x, bullet.pos.y);
+                ctx.rotate((bullet.drawAngle ?? bullet.angle) + PI / 2);
+                ctx.drawImage(bullet.style.image, calcX(bullet.style), calcY(bullet.style));
+                ctx.restore();
+            } else ctx.drawImage(bullet.style.image, x(bullet), y(bullet));
         }
         animations.hitboxSpin.nextFrame((angleStep) => {
             let angle = 2 * PI * angleStep / animations.hitboxSpin.step;
@@ -330,6 +342,14 @@ class App {
                     : step / animations.hitboxShow.step
                 );
             }, !player.slowMove);
+            bullets.forEach((bullet) => {
+                ctx.fillStyle = "white";
+                if (bullet.style === bulletStyle.water) {
+                    ctx.beginPath();
+                    ctx.arc(bullet.pos.x, bullet.pos.y, 7, 0, 2*PI);
+                    ctx.fill();
+                }
+            });
         });
     }
 }
