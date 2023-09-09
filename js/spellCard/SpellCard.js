@@ -21,9 +21,6 @@ export default class SpellCard {
     frameEqual(value) {
         return this.frame === value;
     }
-    frameMatch(value) {
-        return this.frame % value === 0;
-    }
     nextFrame() {
         this.globalFrame++;
         this.frame++;

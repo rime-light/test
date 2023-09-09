@@ -47,6 +47,9 @@ export default class Entity {
         pos = pos ?? player.pos;
         this.angleChange(pos, true);
     }
+    frameMatch(value) {
+        return this.frame % value === 0;
+    }
 }
 
 export class BaseCheck {

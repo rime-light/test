@@ -59,7 +59,7 @@ export default class FileLoader {
         let screen = document.createElement("canvas");
         let painter = screen.getContext("2d");
         screen.width = sw;
-        screen.width = sh;
+        screen.height = sh;
         painter.save();
         options.opacity && (painter.globalAlpha = options.opacity);
         painter.drawImage(img, x, y, w, h, 0, 0, sw, sh);
