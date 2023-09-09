@@ -108,7 +108,9 @@ class App {
         });
 
         let storageValue = localStorage.getItem("quality");
-        ctx.imageSmoothingQuality = "high";
+        if (!["low", "medium", "high"].includes(storageValue)) {
+            storageValue = "high";
+        }
         document.getElementsByName("quality").forEach((radio) => {
             if (storageValue === radio.value) {
                 radio.checked = true;
@@ -162,7 +164,7 @@ class App {
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet1`, (img) => {
             bulletStyle.water = this.createBulletStyle(img, 8, 13, 2, 2, 32, true, {luminosity: 20});
-            bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 16, true);
+            bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 18, true);
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet2`, (img) => {
             bulletStyle.knife = this.createBulletStyle(img, 8, 6, 2, 2, 32, true);
