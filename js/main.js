@@ -5,6 +5,7 @@ import Entity, {BaseCheck} from "./item/Entity.js"
 import FreezeStar from "./spellCard/FreezeStar.js";
 import SparklingWater from "./spellCard/SparklingWater.js";
 import Mishaguji from "./spellCard/Mishaguji.js";
+import Day210 from "./spellCard/Day210.js";
 
 class App {
     constructor() {
@@ -161,7 +162,7 @@ class App {
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet1`, (img) => {
             bulletStyle.water = this.createBulletStyle(img, 8, 13, 2, 2, 32, true, {luminosity: 20});
-            bulletStyle.rice = this.createBulletStyle(img, 10, 4, 1, 1, 16, true);
+            bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 16, true);
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet2`, (img) => {
             bulletStyle.knife = this.createBulletStyle(img, 8, 6, 2, 2, 32, true);
@@ -201,6 +202,17 @@ class App {
             image: FileLoader.saveAsCanvas(img, x, y, w, h, { sw: size, sh: size, ...options })
         };
     }
+    createBulletStyleList(img, x, y, w, h, row, column, size, angle, options) {
+        let list = [];
+        const imgList = FileLoader.saveAsCanvasList(img, x, y, w, h, row, column, { sw: size, sh: size, ...options });
+        for (let i = 0; i < imgList.length; i++) {
+            list.push({
+                size, angle,
+                image: imgList[i]
+            });
+        }
+        return list;
+    }
 
     animationInit() {
         let animations = {};
@@ -239,7 +251,7 @@ class App {
         };
         this.animationInit();
         bullets = [];
-        this.spellCard = new Mishaguji();
+        this.spellCard = new Day210();
         setTimeout(() => {
             this.playing = true;
             requestAnimationFrame(this.calcFrame);

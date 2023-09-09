@@ -3,39 +3,50 @@ import SpellCard, {createWay} from "./SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color} from "../item/Style.js";
 
-export default class Mishaguji extends SpellCard {
+export default class Day210 extends SpellCard {
     constructor() {
         super({
             basePos: { x: W / 2, y: H / 4 },
+            value: {
+                line: 25
+            },
             waitTime: {
-                layer: 90
+                line: 5,
+                wave: 240
             }
         });
-        this.way = 60;
+        this.way = 16;
         this.nextWave(0);
     }
     nextFrame() {
         super.nextFrame();
     }
-    createSingle(angle) {
+    createSingle(step, other) {
+        if (step >= this.value.line) return;
+        const {angle} = other;
         const {way, basePos} = this;
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < way; j++) {
                 // break;
                 let bullet = new Entity({
                     size: 2.4,
-                    style: bulletStyle.rice[Color.green],
+                    style: bulletStyle.rice[i ? Color.green : Color.blue],
                     pos: {...basePos},
                     basePos: {...basePos},
                     angle: createWay(angle + (i ? 0 : PI / way), way, j),
-                    baseSpeed: 1.8
+                    baseSpeed: 8
                 });
                 bullet.setMove((item) => {
                     item.speedAngle();
-                    let spinStart = 60, spinTime = 90;
-                    if (item.frame >= spinStart && item.frame < spinStart + spinTime) {
-                        item.angle += (i ? 1 : -1) * PI / (2 * spinTime);
-                        item.baseSpeed -= 1 / spinTime;
+                    let slowTime = 75,
+                        spinTime = 90;
+                    if (item.frame < spinTime) {
+                        item.angle += (i ? 1 : -1) * 1.75 * PI / spinTime;
+                    } else if (item.frame === spinTime) {
+                        item.angle += PI / 20 * (2 * randomInt(0, step) - step) / this.value.line;
+                    }
+                    if (item.frame < slowTime) {
+                        item.baseSpeed -= 5.5 / slowTime;
                     }
                 });
                 bullet.setClearedCheck((item) => {
@@ -44,14 +55,17 @@ export default class Mishaguji extends SpellCard {
                 bullets.push(bullet);
             }
         }
+        Timer.wait(
+            () => this.createSingle(step + 1, other),
+            this.waitTime.line
+        );
     }
     nextWave(step) {
         super.nextWave();
-        this.createSingle(random(0, 2 * PI / this.way));
-        this.waitTime.layer = Math.max(45, this.waitTime.layer - 3);
+        this.createSingle(0, {angle: random(0, 2 * PI / this.way)});
         Timer.wait(
             () => this.nextWave(step),
-            this.waitTime.layer
+            this.waitTime.wave
         );
     }
 }
