@@ -1,6 +1,7 @@
 import Entity, {BaseCheck} from "../item/Entity.js";
 import SpellCard, {createWay} from "./SpellCard.js";
 import Timer from "../util/Timer.js";
+import {Size} from "../item/Style.js";
 
 export default class SparklingWater extends SpellCard {
     constructor() {
@@ -46,7 +47,7 @@ export default class SparklingWater extends SpellCard {
         for (let i = 0; i < 2; i++) {
             let upDown = (i === 0);
             let bullet = new Entity({
-                size: 4,
+                size: Size.water,
                 style: bulletStyle.water,
                 pos: { x: (dir ? -expand : W + expand), y: offsetY + createWay(H / 2, rowCount, row, 35) },
                 angle: (dir ? 0 : PI),
@@ -74,7 +75,7 @@ export default class SparklingWater extends SpellCard {
         let angle = posAngle(pos, player.pos);
         for (let i = 0; i < way; i++) {
             let bullet = new Entity({
-                size: 8.5,
+                size: Size.middle,
                 style: bulletStyle.middle,
                 pos: {...pos},
                 basePos: {...pos},

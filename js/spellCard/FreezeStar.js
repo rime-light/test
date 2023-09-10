@@ -1,6 +1,7 @@
 import Entity, {BaseCheck} from "../item/Entity.js";
 import SpellCard, {createWay} from "./SpellCard.js";
 import Timer from "../util/Timer.js";
+import {Size} from "../item/Style.js";
 
 export default class FreezeStar extends SpellCard {
     constructor() {
@@ -28,8 +29,7 @@ export default class FreezeStar extends SpellCard {
         for (let i = 0; i < way; i++) {
             // break;
             let bullet = new Entity({
-                frame: 0,
-                size: 4,
+                size: Size.water,
                 style: bulletStyle.water,
                 pos: {...basePos},
                 basePos: {...basePos},
@@ -49,6 +49,6 @@ export default class FreezeStar extends SpellCard {
         super.nextWave();
         this.way = Math.min(80, this.way + 5);
         this.value.layer = Math.min(16, this.value.layer + 1);
-        this.createSingle(random(0, 2 * PI / this.way));
+        this.createSingle(0, {angle: random(0, 2 * PI / this.way)});
     }
 }

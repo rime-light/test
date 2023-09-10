@@ -5,9 +5,9 @@ export default class FileLoader {
     static size(value) {
         return value * this.px;
     }
-    static loadPng(filename, loadedFn, failedFn) {
+    static loadImg(type, filename, loadedFn, failedFn) {
         let img = new Image();
-        img.src = `images/${filename}.png`;
+        img.src = `images/${filename}.${type}`;
         img.onload = () => {
             loadedFn(img);
         }
@@ -19,6 +19,12 @@ export default class FileLoader {
                 failedFn
             });
         };
+    }
+    static loadPng(filename, loadedFn, failedFn) {
+        FileLoader.loadImg("png", filename, loadedFn, failedFn);
+    }
+    static loadJpg(filename, loadedFn, failedFn) {
+        FileLoader.loadImg("jpg", filename, loadedFn, failedFn);
     }
     static queue(loaderFn, filename, loadedFn) {
         if (this.loading) return false;

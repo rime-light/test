@@ -17,3 +17,9 @@ export const Color = {
     white: 15,
     random() { return randomInt(0, 15); }
 }
+export const Size = {
+    rice: 2.4,
+    water: 4.0,
+    knife: 6.0,
+    middle: 8.5,
+}

@@ -4,7 +4,7 @@ const
     W = 384, H = 448,
     diagonalRate = 1 / Math.sqrt(2),
     limitDistance = { top: 24, bottom: 16, left: 8, right: 8 };
-let background, hitbox, playerStyle, bulletStyle;
+let hitbox, playerStyle, bulletStyle;
 let player, bullets;
 
 function test(node) {

@@ -2,12 +2,10 @@ import CanvasAnimation from "./util/Animation.js";
 import FileLoader from "./util/FileLoader.js";
 import Timer from "./util/Timer.js";
 import Entity, {BaseCheck} from "./item/Entity.js"
-import FreezeStar from "./spellCard/FreezeStar.js";
-import SparklingWater from "./spellCard/SparklingWater.js";
-import Mishaguji from "./spellCard/Mishaguji.js";
-import Day210 from "./spellCard/Day210.js";
+import {spellList} from "./item/SpellList.js";
+import SelectPage from "./page/SelectPage.js";
 
-class App {
+class Game {
     constructor() {
         this.functionBind();
 
@@ -15,110 +13,50 @@ class App {
         this.frameLocked = false;
         this.moveHCount = 0;
         this.moveVCount = 0;
-        this.pressed = {};
+        this.pressed = new Map();
         this.playing = false;
+        this.paused = false;
 
-        let canvas = document.getElementById("items");
-        let ctx = canvas.getContext("2d");
+        let gameBlock = document.getElementById("game");
+        gameBlock.style.width = `${W}px`;
+        gameBlock.style.height = `${H}px`;
+        let painter = {};
         let dpr = window.devicePixelRatio;
-        canvas.width = Math.round(W * dpr);
-        canvas.height = Math.round(H * dpr);
-        canvas.style.width = `${W}px`;
-        canvas.style.height = `${H}px`;
-        ctx.scale(dpr, dpr);
+        document.querySelectorAll("canvas").forEach((canvas) => {
+            let ctx = canvas.getContext("2d");
+            canvas.width = Math.round(W * dpr);
+            canvas.height = Math.round(H * dpr);
+            canvas.style.width = `${W}px`;
+            canvas.style.height = `${H}px`;
+            ctx.scale(dpr, dpr);
+            painter[canvas.id] = ctx;
+        });
+        this.painter = painter;
+        this.select = new SelectPage(painter.text);
         changeSize();
 
-        window.addEventListener("keydown", (event) => {
-            let key = event.key;
-            if (this.pressed[key]) return;
-            switch (key) {
-                case "ArrowUp":
-                    this.pressed[key] = true;
-                    this.moveVCount++;
-                    if (!this.pressed["ArrowDown"]) player.direction.y = -1;
-                    break;
-                case "ArrowDown":
-                    this.pressed[key] = true;
-                    this.moveVCount++;
-                    if (!this.pressed["ArrowUp"]) player.direction.y = 1;
-                    break;
-                case "ArrowLeft":
-                    this.pressed[key] = true;
-                    this.moveHCount++;
-                    if (!this.pressed["ArrowRight"]) player.direction.x = -1;
-                    break;
-                case "ArrowRight":
-                    this.pressed[key] = true;
-                    this.moveHCount++;
-                    if (!this.pressed["ArrowLeft"]) player.direction.x = 1;
-                    break;
-                case "Shift":
-                    this.pressed[key] = true;
-                    player.slowMove = true;
-                    break;
-                default:
-                    return;
-            }
-            player.diagonalMove = (this.moveVCount > 0 && this.moveHCount > 0);
-        });
-        window.addEventListener("keyup", (event) => {
-            let key = event.key;
-            if (!this.pressed[key]) return;
-            switch (key) {
-                case "ArrowUp":
-                    this.pressed[key] = false;
-                    this.moveVCount--;
-                    player.direction.y = this.pressed["ArrowDown"] ? 1 : 0;
-                    break;
-                case "ArrowDown":
-                    this.pressed[key] = false;
-                    this.moveVCount--;
-                    player.direction.y = this.pressed["ArrowUp"] ? -1 : 0;
-                    break;
-                case "ArrowLeft":
-                    this.pressed[key] = false;
-                    this.moveHCount--;
-                    player.direction.x = this.pressed["ArrowRight"] ? 1 : 0;
-                    break;
-                case "ArrowRight":
-                    this.pressed[key] = false;
-                    this.moveHCount--;
-                    player.direction.x = this.pressed["ArrowLeft"] ? -1 : 0;
-                    break;
-                case "Shift":
-                    this.pressed[key] = false;
-                    player.slowMove = false;
-                    break;
-                default:
-                    return;
-            }
-            player.diagonalMove = (this.moveVCount > 0 && this.moveHCount > 0);
-        });
         document.getElementById("options").addEventListener("keydown", (event) => {
             if (event.key.startsWith("Arrow"))
                 event.preventDefault();
-        });
-        document.getElementById("reload").addEventListener("click", this.init);
-        document.getElementById("stop").addEventListener("click", () => {
-            if (this.playing) this.playing = false;
-            else {
-                this.playing = true;
-                requestAnimationFrame(this.calcFrame);
-            }
         });
 
         let storageValue = localStorage.getItem("quality");
         if (!["low", "medium", "high"].includes(storageValue)) {
             storageValue = "high";
         }
+        const changeQuality = (value) => {
+            Object.keys(painter).forEach((id) => {
+                painter[id].imageSmoothingQuality = value;
+            })
+        }
         document.getElementsByName("quality").forEach((radio) => {
             if (storageValue === radio.value) {
                 radio.checked = true;
-                ctx.imageSmoothingQuality = storageValue;
+                changeQuality(storageValue);
             }
             radio.addEventListener("change", () => {
                 let currentValue = radio.value;
-                ctx.imageSmoothingQuality = currentValue;
+                changeQuality(storageValue);
                 localStorage.setItem("quality", currentValue);
             });
         });
@@ -139,18 +77,18 @@ class App {
         });
         checkbox.addEventListener("change", frameControl);
 
-        ctx.font = "bold 28px Arial";
-        ctx.textAlign = "center";
-        ctx.lineWidth = 1;
-        ctx.fillStyle = "lightblue";
-        ctx.strokeStyle = "gray"
-        let txt = "等待加载资源完毕...";
-        ctx.fillText(txt, W >> 1, H >> 1);
-        ctx.strokeText(txt, W >> 1, H >> 1);
-        background = new Image();
-        background.src = "images/bg.jpg";
+        painter.text.font = "bold 28px Arial";
+        painter.text.textAlign = "center";
+        painter.text.lineWidth = 1;
+        painter.text.fillStyle = "lightblue";
+        painter.text.strokeStyle = "gray"
+        this.write("等待加载资源完毕...", true);
+
         playerStyle = [];
         bulletStyle = {};
+        FileLoader.queue(FileLoader.loadJpg, "bg", (img) => {
+            painter.bg.drawImage(img, 0, 0, W, H);
+        });
         FileLoader.queue(FileLoader.loadPng, "player/sloweffect", (img) => {
             let size = 4;
             hitbox = {
@@ -164,27 +102,159 @@ class App {
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet1`, (img) => {
             bulletStyle.water = this.createBulletStyle(img, 8, 13, 2, 2, 32, true, {luminosity: 20});
-            bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 18, true);
+            bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 16, true);
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet2`, (img) => {
             bulletStyle.knife = this.createBulletStyle(img, 8, 6, 2, 2, 32, true);
             bulletStyle.middle = this.createBulletStyle(img, 6, 2, 2, 2, 32, false);
         });
-        FileLoader.loadList(this.init, (err) => {
-            let msg = `${err.failList.length}个资源加载失败`;
-            ctx.clearRect(0, 0, W, H);
-            ctx.fillStyle = "orangered";
-            ctx.fillText(msg, W / 2, H / 2);
-            ctx.strokeText(msg, W / 2, H / 2);
+        FileLoader.loadList(() => {
+            this.write("", true);
+            this.select.init(localStorage.getItem("lastPlay"));
+            window.addEventListener("keydown", (event) => {
+                let key = event.key;
+                if (key.length < 2) key = key.toUpperCase();
+                if (this.pressed.get(key)) return;
+                this.pressed.set(key, true);
+                switch (key) {
+                    case "ArrowUp":
+                        if (this.playing) {
+                            this.moveVCount++;
+                            if (!this.pressed.get("ArrowDown")) player.direction.y = -1;
+                        } else {
+                            this.select.prevLine();
+                        }
+                        break;
+                    case "ArrowDown":
+                        if (this.playing) {
+                            this.moveVCount++;
+                            if (!this.pressed.get("ArrowUp")) player.direction.y = 1;
+                        } else {
+                            this.select.nextLine();
+                        }
+                        break;
+                    case "ArrowLeft":
+                        if (this.playing) {
+                            this.moveHCount++;
+                            if (!this.pressed.get("ArrowRight")) player.direction.x = -1;
+                        } else {
+                            this.select.prevPage();
+                        }
+                        break;
+                    case "ArrowRight":
+                        if (this.playing) {
+                            this.moveHCount++;
+                            if (!this.pressed.get("ArrowLeft")) player.direction.x = 1;
+                        } else {
+                            this.select.nextPage();
+                        }
+                        break;
+                    case "Shift":
+                        if (this.playing) {
+                            player.slowMove = true;
+                        }
+                        break;
+                    case "Z":
+                        if (this.playing) {
+
+                        } else {
+                            localStorage.setItem("lastPlay", this.select.cardId());
+                            this.init();
+                        }
+                        break;
+                    case "Escape":
+                        if (this.playing) {
+                            this.write("", true);
+                            if (this.paused) {
+                                this.paused = false;
+                                requestAnimationFrame(this.calcFrame);
+                            } else {
+                                this.paused = true;
+                                painter.text.save();
+                                painter.text.fillStyle = "#000000af"
+                                painter.text.fillRect(0, 0, W, H);
+                                painter.text.restore();
+                                this.write("暂停中");
+                            }
+                        }
+                        break;
+                    case "R":
+                        if (this.playing) {
+                            this.init();
+                        }
+                        break;
+                    case "Q":
+                        if (this.playing) {
+                            this.playing = false;
+                            painter.items.clearRect(0, 0, W, H);
+                            this.select.init(localStorage.getItem("lastPlay"));
+                        }
+                        break;
+                    default:
+                        return;
+                }
+                if (this.playing) player.diagonalMove = (this.moveVCount > 0 && this.moveHCount > 0);
+            });
+            window.addEventListener("keyup", (event) => {
+                let key = event.key;
+                if (key.length < 2) key = key.toUpperCase();
+                if (!this.pressed.get(key)) return;
+                this.pressed.set(key, false);
+                switch (key) {
+                    case "ArrowUp":
+                        if (this.playing) {
+                            this.moveVCount--;
+                            player.direction.y = this.pressed.get("ArrowDown") ? 1 : 0;
+                        }
+                        break;
+                    case "ArrowDown":
+                        if (this.playing) {
+                            this.moveVCount--;
+                            player.direction.y = this.pressed.get("ArrowUp") ? -1 : 0;
+                        }
+                        break;
+                    case "ArrowLeft":
+                        if (this.playing) {
+                            this.moveHCount--;
+                            player.direction.x = this.pressed.get("ArrowRight") ? 1 : 0;
+                        }
+                        break;
+                    case "ArrowRight":
+                        if (this.playing) {
+                            this.moveHCount--;
+                            player.direction.x = this.pressed.get("ArrowLeft") ? -1 : 0;
+                        }
+                        break;
+                    case "Shift":
+                        if (this.playing) {
+                            player.slowMove = false;
+                        }
+                        break;
+                    default:
+                        return;
+                }
+                if (this.playing) player.diagonalMove = (this.moveVCount > 0 && this.moveHCount > 0);
+            });
+        }, (err) => {
+            painter.text.fillStyle = "orangered";
+            this.write(`${err.failList.length}个资源加载失败`, true);
         });
-        this.canvas = canvas;
-        this.ctx = ctx;
     }
 
     functionBind() {
         this.init = this.init.bind(this);
         this.draw = this.draw.bind(this);
         this.calcFrame = this.calcFrame.bind(this);
+    }
+
+    write(txt, clear, x, y) {
+        x = x ?? W >> 1;
+        y = y ?? H >> 1;
+        if (clear) this.painter.text.clearRect(0, 0, W, H);
+        if (txt) {
+            this.painter.text.fillText(txt, x, y);
+            this.painter.text.strokeText(txt, x, y);
+        }
     }
 
     createPlayerStyle(img) {
@@ -216,6 +286,8 @@ class App {
         return list;
     }
 
+
+
     animationInit() {
         let animations = {};
         animations.playerNormal = new CanvasAnimation(5, 8, true);
@@ -235,7 +307,9 @@ class App {
     }
 
     init() {
+        this.write("", true);
         this.playing = false;
+        this.paused = false;
         Timer.waiting = [];
         player = {
             style: playerStyle[0],
@@ -253,7 +327,7 @@ class App {
         };
         this.animationInit();
         bullets = [];
-        this.spellCard = new Day210();
+        this.spellCard = spellList[this.select.cardId()].render();
         setTimeout(() => {
             this.playing = true;
             requestAnimationFrame(this.calcFrame);
@@ -261,7 +335,7 @@ class App {
     }
 
     calcFrame(timestamp) {
-        if (!this.playing) return;
+        if (!this.playing || this.paused) return;
         if (this.frameLocked) {
             if (!timestamp) timestamp = this.prevTime;
             let interval = 1000 / FPS, delta = timestamp - this.prevTime;
@@ -310,8 +384,9 @@ class App {
     }
 
     draw(biu) {
-        const {ctx, animations} = this;
-        ctx.drawImage(background, 0, 0);
+        const {painter, animations} = this;
+        const ctx = painter.items;
+        ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = biu ? "#ff00003f" : "#afafff3f";
         ctx.fillRect(0, 0, W, H);
         animations.playerNormal.nextFrame((step) => {
@@ -375,6 +450,6 @@ function changeSize() {
     document.querySelector("#container").style.setProperty("--expand", `${expandRate}`);
 }
 
-window.onload = () => new App();
+window.onload = () => new Game();
 
 window.onresize = changeSize;

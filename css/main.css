@@ -23,7 +23,16 @@ body {
 }
 .game {
     background: transparent;
-    border:  1px solid black;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.game:first-child {
+    background: white;
+}
+.game:last-child {
+    box-sizing: border-box;
+    border: 1px solid black;
 }
 #container {
     --expand: 1;
