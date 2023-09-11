@@ -70,27 +70,6 @@ export default class FileLoader {
         options.opacity && (painter.globalAlpha = options.opacity);
         painter.drawImage(img, x, y, w, h, 0, 0, sw, sh);
         painter.restore();
-        // options.hue && hsl("hue", options.hue);
-        // options.saturation && hsl("saturation", options.saturation);
-        if (options.luminosity) {
-            let imgData = painter.getImageData(0, 0, sw, sh);
-            let data = imgData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                let k = i + 3;
-                if (data[k] === 0) continue;
-                if (data[k] < 255 && options.luminosity > 0) {
-                    data[k] *= 1 - options.luminosity / 100;
-                    if (data[k] < 0) data[k] = 0;
-                }
-                for (let j = 0; j < 3; j++) {
-                    k = i + j;
-                    data[k] += Math.round(options.luminosity * 255 / 100);
-                    if (data[k] < 0) data[k] = 0;
-                    else if (data[k] > 255) data[k] = 255;
-                }
-            }
-            painter.putImageData(imgData, 0, 0);
-        }
         return screen;
     }
     static saveAsCanvasList(img, x, y, w, h, rowCount, columnCount, options) {

@@ -3,6 +3,7 @@ export default class Entity {
         this.frame = 0;
         this.size = 0;
         this.style = null;
+        this.lighter = false;
         this.pos = { x: 0, y: 0 };
         this.speed = { x: 0, y: 0 };
         this.basePos = 0;

@@ -10,8 +10,7 @@ export default class SparklingWater extends SpellCard {
             value: {
                 middle: 6,
                 small: 15,
-                row: 15,
-                waitForStop: 300
+                row: 15
             },
             waitTime: {
                 middle: 20,
@@ -24,7 +23,7 @@ export default class SparklingWater extends SpellCard {
     }
     nextFrame() {
         super.nextFrame();
-        if (this.frameEqual(480)) {
+        if (this.frameEqual(450)) {
             this.nextWave();
             return;
         }
@@ -36,12 +35,12 @@ export default class SparklingWater extends SpellCard {
                 offsetY: random(-range, range)
             });
         }
-        if (this.frameEqual(360)) this.createShootTo(0);
+        if (this.frameEqual(340)) this.createShootTo(0);
     }
     sinNext(step, other) {
         if (step >= this.value.small) return;
         const { row, priority, offsetY } = other;
-        const expand = 30,
+        const expand = 25,
             rowCount = this.value.row,
             dir = ((priority + row) & 1) === 1;
         for (let i = 0; i < 2; i++) {
@@ -49,9 +48,10 @@ export default class SparklingWater extends SpellCard {
             let bullet = new Entity({
                 size: Size.water,
                 style: bulletStyle.water,
+                lighter: true,
                 pos: { x: (dir ? -expand : W + expand), y: offsetY + createWay(H / 2, rowCount, row, 35) },
                 angle: (dir ? 0 : PI),
-                angleSpeed: PI / 235 * (upDown ? 1 : -1),
+                angleSpeed: PI / 225 * (upDown ? 1 : -1),
                 baseSpeed: 1.35
             });
             bullet.setMove((item) => {

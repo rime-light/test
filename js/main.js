@@ -20,16 +20,22 @@ class Game {
         let gameBlock = document.getElementById("game");
         gameBlock.style.width = `${W}px`;
         gameBlock.style.height = `${H}px`;
-        let painter = {};
+        let painter = {
+            item: true,
+            text: true
+        };
         let dpr = window.devicePixelRatio;
-        document.querySelectorAll("canvas").forEach((canvas) => {
+        Object.keys(painter).forEach((id) => {
+            let canvas = document.createElement("canvas");
             let ctx = canvas.getContext("2d");
+            canvas.className = "game";
             canvas.width = Math.round(W * dpr);
             canvas.height = Math.round(H * dpr);
             canvas.style.width = `${W}px`;
             canvas.style.height = `${H}px`;
             ctx.scale(dpr, dpr);
-            painter[canvas.id] = ctx;
+            gameBlock.appendChild(canvas);
+            painter[id] = ctx;
         });
         this.painter = painter;
         this.select = new SelectPage(painter.text);
@@ -87,7 +93,8 @@ class Game {
         playerStyle = [];
         bulletStyle = {};
         FileLoader.queue(FileLoader.loadJpg, "bg", (img) => {
-            painter.bg.drawImage(img, 0, 0, W, H);
+            background = img;
+            painter.item.drawImage(img, 0, 0);
         });
         FileLoader.queue(FileLoader.loadPng, "player/sloweffect", (img) => {
             let size = 4;
@@ -101,12 +108,17 @@ class Game {
             playerStyle.push(this.createPlayerStyle(img));
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet1`, (img) => {
-            bulletStyle.water = this.createBulletStyle(img, 8, 13, 2, 2, 32, true, {luminosity: 20});
+            bulletStyle.water = {
+                animation: true,
+                sub: this.createBulletStyleList(img, 8, 13, 2, 2, 1, 4, 32, true)
+            };
+            bulletStyle.small = this.createBulletStyleList(img, 0, 3, 1, 1, 1, 16, 16, true);
             bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 16, true);
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet2`, (img) => {
             bulletStyle.knife = this.createBulletStyle(img, 8, 6, 2, 2, 32, true);
             bulletStyle.middle = this.createBulletStyle(img, 6, 2, 2, 2, 32, false);
+            bulletStyle.large = this.createBulletStyle(img, 4, 12, 4, 4, 64, false);
         });
         FileLoader.loadList(() => {
             this.write("", true);
@@ -156,7 +168,7 @@ class Game {
                         break;
                     case "Z":
                         if (this.playing) {
-
+                            if (this.paused) this.pauseToggle();
                         } else {
                             localStorage.setItem("lastPlay", this.select.cardId());
                             this.init();
@@ -164,18 +176,7 @@ class Game {
                         break;
                     case "Escape":
                         if (this.playing) {
-                            this.write("", true);
-                            if (this.paused) {
-                                this.paused = false;
-                                requestAnimationFrame(this.calcFrame);
-                            } else {
-                                this.paused = true;
-                                painter.text.save();
-                                painter.text.fillStyle = "#000000af"
-                                painter.text.fillRect(0, 0, W, H);
-                                painter.text.restore();
-                                this.write("暂停中");
-                            }
+                            this.pauseToggle();
                         }
                         break;
                     case "R":
@@ -186,7 +187,8 @@ class Game {
                     case "Q":
                         if (this.playing) {
                             this.playing = false;
-                            painter.items.clearRect(0, 0, W, H);
+                            this.gameViewClear();
+                            painter.item.drawImage(background, 0, 0);
                             this.select.init(localStorage.getItem("lastPlay"));
                         }
                         break;
@@ -247,6 +249,26 @@ class Game {
         this.calcFrame = this.calcFrame.bind(this);
     }
 
+    pauseToggle() {
+        this.write("", true);
+        if (this.paused) {
+            this.paused = false;
+            requestAnimationFrame(this.calcFrame);
+        } else {
+            let ctx = this.painter.text;
+            this.paused = true;
+            ctx.save();
+            ctx.fillStyle = "#000000af"
+            ctx.fillRect(0, 0, W, H);
+            ctx.restore();
+            this.write("暂停中");
+        }
+    }
+
+    gameViewClear() {
+        this.painter.item.clearRect(0, 0, W, H);
+    }
+
     write(txt, clear, x, y) {
         x = x ?? W >> 1;
         y = y ?? H >> 1;
@@ -286,8 +308,6 @@ class Game {
         return list;
     }
 
-
-
     animationInit() {
         let animations = {};
         animations.playerNormal = new CanvasAnimation(5, 8, true);
@@ -313,7 +333,7 @@ class Game {
         Timer.waiting = [];
         player = {
             style: playerStyle[0],
-            size: 3,
+            size: 2.5,
             pos: { x: W / 2, y: H - H / 10 },
             direction: { x: 0, y: 0 },
             baseSpeed: 5,
@@ -383,12 +403,26 @@ class Game {
         requestAnimationFrame(this.calcFrame);
     }
 
+    drawBullet(bullet) {
+        let bulletCtx = this.painter.item;
+        let style = (bullet.style.animation ? bullet.style.sub[Math.floor(bullet.frame / 4) % bullet.style.sub.length] : bullet.style);
+        if (style.angle) {
+            bulletCtx.save();
+            bulletCtx.translate(bullet.pos.x, bullet.pos.y);
+            bulletCtx.rotate((bullet.drawAngle ?? bullet.angle) + PI / 2);
+            bulletCtx.drawImage(style.image, calcX(style), calcY(style));
+            bulletCtx.restore();
+        } else bulletCtx.drawImage(style.image, x(bullet), y(bullet));
+    }
     draw(biu) {
         const {painter, animations} = this;
-        const ctx = painter.items;
-        ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = biu ? "#ff00003f" : "#afafff3f";
-        ctx.fillRect(0, 0, W, H);
+        const ctx = painter.item;
+        this.gameViewClear();
+        ctx.drawImage(background, 0, 0);
+        if (biu) {
+            ctx.fillStyle = "#ff00003f";
+            ctx.fillRect(0, 0, W, H);
+        }
         animations.playerNormal.nextFrame((step) => {
             ctx.drawImage(player.style.normal[step], x(player), y(player));
         });
@@ -402,15 +436,20 @@ class Game {
                 (step) => ctx.drawImage(player.style.left[step + 4], x(player), y(player))
                 : (step) => ctx.drawImage(player.style.right[step + 4], x(player), y(player))
         );
+        let lighterList = [];
         for (const bullet of bullets) {
-            if (bullet.style.angle) {
-                ctx.save();
-                ctx.translate(bullet.pos.x, bullet.pos.y);
-                ctx.rotate((bullet.drawAngle ?? bullet.angle) + PI / 2);
-                ctx.drawImage(bullet.style.image, calcX(bullet.style), calcY(bullet.style));
-                ctx.restore();
-            } else ctx.drawImage(bullet.style.image, x(bullet), y(bullet));
+            if (bullet.lighter) {
+                lighterList.push(bullet);
+                continue;
+            }
+            this.drawBullet(bullet);
         }
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (const bullet of lighterList) {
+           this.drawBullet(bullet);
+        }
+        ctx.restore();
         animations.hitboxSpin.nextFrame((angleStep) => {
             let angle = 2 * PI * angleStep / animations.hitboxSpin.step;
             const turn = (scale) => {
@@ -433,14 +472,6 @@ class Game {
                     : step / animations.hitboxShow.step
                 );
             }, !player.slowMove);
-            bullets.forEach((bullet) => {
-                ctx.fillStyle = "white";
-                if (bullet.style === bulletStyle.water) {
-                    ctx.beginPath();
-                    ctx.arc(bullet.pos.x, bullet.pos.y, 7, 0, 2*PI);
-                    ctx.fill();
-                }
-            });
         });
     }
 }
@@ -451,5 +482,4 @@ function changeSize() {
 }
 
 window.onload = () => new Game();
-
 window.onresize = changeSize;

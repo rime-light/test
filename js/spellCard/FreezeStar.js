@@ -1,7 +1,7 @@
 import Entity, {BaseCheck} from "../item/Entity.js";
 import SpellCard, {createWay} from "./SpellCard.js";
 import Timer from "../util/Timer.js";
-import {Size} from "../item/Style.js";
+import {Color, Size} from "../item/Style.js";
 
 export default class FreezeStar extends SpellCard {
     constructor() {
@@ -29,8 +29,9 @@ export default class FreezeStar extends SpellCard {
         for (let i = 0; i < way; i++) {
             // break;
             let bullet = new Entity({
-                size: Size.water,
-                style: bulletStyle.water,
+                size: Size.small,
+                style: bulletStyle.small[Color.blue],
+                lighter: true,
                 pos: {...basePos},
                 basePos: {...basePos},
                 angle: createWay(angle, way, i),
@@ -38,7 +39,6 @@ export default class FreezeStar extends SpellCard {
             });
             bullet.setMove((item) => {
                 item.speedAngle(item.angle, item.baseSpeed / Math.max(Math.sqrt(item.frame), 1));
-                // if (item.frame === 40) BaseMove.shootTo(item);
             });
             bullet.setClearedCheck(BaseCheck.outOfScreen);
             bullets.push(bullet);

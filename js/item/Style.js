@@ -19,7 +19,9 @@ export const Color = {
 }
 export const Size = {
     rice: 2.4,
+    small: 4.0,
     water: 4.0,
     knife: 6.0,
     middle: 8.5,
+    large: 14.0
 }
