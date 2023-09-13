@@ -4,13 +4,15 @@ export default class Entity {
         this.size = 0;
         this.style = null;
         this.lighter = false;
+        this.top = false;
         this.pos = { x: 0, y: 0 };
         this.speed = { x: 0, y: 0 };
         this.basePos = 0;
         this.baseSpeed = 0;
         this.angle = 0;
-        this.drawAngle = null;
+        this.transformValue = {};
         Object.assign(this, props);
+        this.transform = {...this.transformValue};
     }
     move() {
         return false;
@@ -24,18 +26,29 @@ export default class Entity {
             fn(this);
         };
         this.move = moveFn.bind(this);
-    };
+    }
     setClearedCheck(fn) {
         let clearedFn = () => fn(this);
         this.cleared = clearedFn.bind(this);
+    }
+    clearTransform(...names) {
+        if (!names.length) {
+            this.transform = {};
+            return;
+        }
+        names.forEach(name => delete this.transform[name]);
+    }
+    animation(name, totalFrame = 10, endValue = 1, currentFrame = this.frame) {
+        if (currentFrame > totalFrame) return false;
+        let startValue = this.transformValue[name];
+        this.transform[name] = startValue + (endValue - startValue) * currentFrame / totalFrame;
+        return true;
     }
     speedXY() {
         this.pos.x += this.speed.x;
         this.pos.y += this.speed.y;
     };
-    speedAngle(angle, speed) {
-        angle = angle ?? this.angle;
-        speed = speed ?? this.baseSpeed;
+    speedAngle(angle = this.angle, speed = this.baseSpeed) {
         this.pos.x += speed * Math.cos(angle);
         this.pos.y += speed * Math.sin(angle);
     }
@@ -50,6 +63,9 @@ export default class Entity {
     }
     frameMatch(value) {
         return this.frame % value === 0;
+    }
+    frameEqual(value) {
+        return this.frame === value;
     }
 }
 
@@ -75,7 +91,8 @@ export class BaseCheck {
         return false;
     }
     static outOfScreen(entity) {
-        return BaseCheck.outOfRect(entity, 0, 0, W, H);
+        let pos = entity.pos, size = entity.style.size;
+        return BaseCheck.outOfRect({pos, size}, 0, 0, W, H);
     }
     static timeOver(entity, limit) {
         return entity.frame > limit;

@@ -5,11 +5,11 @@ const
     diagonalRate = 1 / Math.sqrt(2),
     limitDistance = { top: 24, bottom: 16, left: 8, right: 8 };
 let background, hitbox, playerStyle, bulletStyle;
-let player, bullets;
+let player, bullets, bulletList = [];
 
-function test(node) {
-    document.querySelector("#container").style.display = "none";
-    node && document.querySelector("body").appendChild(node);
+function r(org, play) {
+    play = play ?? 2;
+    return (Math.hypot(org, play) - play).toFixed(3);
 }
 
 function randomInt(start, end) {

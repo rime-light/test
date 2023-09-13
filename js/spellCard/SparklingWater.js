@@ -1,7 +1,7 @@
 import Entity, {BaseCheck} from "../item/Entity.js";
 import SpellCard, {createWay} from "./SpellCard.js";
 import Timer from "../util/Timer.js";
-import {Size} from "../item/Style.js";
+import {Color8, Size} from "../item/Style.js";
 
 export default class SparklingWater extends SpellCard {
     constructor() {
@@ -76,7 +76,7 @@ export default class SparklingWater extends SpellCard {
         for (let i = 0; i < way; i++) {
             let bullet = new Entity({
                 size: Size.middle,
-                style: bulletStyle.middle,
+                style: bulletStyle.middle[Color8.blue],
                 pos: {...pos},
                 basePos: {...pos},
                 angle: createWay(angle, way, i, PI / 18),

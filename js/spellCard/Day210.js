@@ -1,7 +1,7 @@
 import Entity, {BaseCheck} from "../item/Entity.js";
 import SpellCard, {createWay} from "./SpellCard.js";
 import Timer from "../util/Timer.js";
-import {Color, Size} from "../item/Style.js";
+import {Color16, Size} from "../item/Style.js";
 
 export default class Day210 extends SpellCard {
     constructor() {
@@ -30,7 +30,7 @@ export default class Day210 extends SpellCard {
                 // break;
                 let bullet = new Entity({
                     size: Size.rice,
-                    style: bulletStyle.rice[i ? Color.blue : Color.green],
+                    style: bulletStyle.rice[i ? Color16.blue : Color16.green],
                     pos: {...basePos},
                     basePos: {...basePos},
                     angle: createWay(angle + (i ? 0 : PI / way), way, j),

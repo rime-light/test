@@ -1,21 +1,45 @@
 import Entity, {BaseCheck} from "../item/Entity.js";
 import SpellCard, {createWay} from "./SpellCard.js";
 import Timer from "../util/Timer.js";
-import {Color16, Size} from "../item/Style.js";
+import {Color16, Color8, Size} from "../item/Style.js";
 
-export default class Mishaguji extends SpellCard {
+export default class DreamSealWabi extends SpellCard {
     constructor() {
         super({
-            basePos: { x: W / 2, y: H / 4 },
+            basePos: { x: W / 2, y: H / 6 },
+            value: {
+                middle: 50,
+                small: 5
+            },
             waitTime: {
-                layer: 90
+                middle: 60
             }
         });
-        this.way = 60;
-        this.nextWave(0);
+        this.createMiddle();
+        // this.nextWave(0);
     }
     nextFrame() {
         super.nextFrame();
+    }
+    createMiddle() {
+        const basePos = this.basePos, {middle: way} = this.value;
+        let angle = posAngle(basePos, player.pos, PI / 2) - randomInt(1, way) * 2 * PI / way;
+        for (let i = 0; i < way; i++) {
+            let bullet = new Entity({
+                size: Size.middle,
+                style: bulletStyle.middle[Color8.white],
+                pos: {...basePos},
+                basePos: {...basePos},
+                angle: createWay(angle, way, i),
+                baseSpeed: 2.5
+            });
+            bullet.setMove((item) => {
+                item.speedAngle();
+            });
+            bullet.setClearedCheck(BaseCheck.outOfScreen)
+            bullets.push(bullet);
+        }
+        Timer.wait(() => this.createMiddle(), this.waitTime.middle);
     }
     createSingle(angle) {
         const {way, basePos} = this;

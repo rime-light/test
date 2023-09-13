@@ -42,7 +42,7 @@ class Game {
         changeSize();
 
         document.getElementById("options").addEventListener("keydown", (event) => {
-            if (event.key.startsWith("Arrow"))
+            if (event.key.startsWith("Arrow") || event.key === " ")
                 event.preventDefault();
         });
 
@@ -60,9 +60,9 @@ class Game {
                 radio.checked = true;
                 changeQuality(storageValue);
             }
-            radio.addEventListener("change", () => {
-                let currentValue = radio.value;
-                changeQuality(storageValue);
+            radio.addEventListener("change", (event) => {
+                let currentValue = event.target.value;
+                changeQuality(currentValue);
                 localStorage.setItem("quality", currentValue);
             });
         });
@@ -108,17 +108,24 @@ class Game {
             playerStyle.push(this.createPlayerStyle(img));
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet1`, (img) => {
+            let sub = this.createBulletStyleList(img, 8, 13, 2, 2, 1, 4, 32, true);
             bulletStyle.water = {
                 animation: true,
-                sub: this.createBulletStyleList(img, 8, 13, 2, 2, 1, 4, 32, true)
+                size: sub[0].size,
+                sub
             };
-            bulletStyle.small = this.createBulletStyleList(img, 0, 3, 1, 1, 1, 16, 16, true);
+            bulletStyle.small = this.createBulletStyleList(img, 0, 3, 1, 1, 1, 16, 16, false);
             bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 16, true);
+            bulletStyle.paper = this.createBulletStyleList(img, 0, 7, 1, 1, 1, 16, 16, true);
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet2`, (img) => {
-            bulletStyle.knife = this.createBulletStyle(img, 8, 6, 2, 2, 32, true);
-            bulletStyle.middle = this.createBulletStyle(img, 6, 2, 2, 2, 32, false);
-            bulletStyle.large = this.createBulletStyle(img, 4, 12, 4, 4, 64, false);
+            bulletStyle.middle = this.createBulletStyleList(img, 0, 2, 2, 2, 1, 8, 32, false);
+            bulletStyle.butterfly = this.createBulletStyleList(img, 0, 4, 2, 2, 1, 8, 32, true);
+            bulletStyle.knife = this.createBulletStyleList(img, 0, 6, 2, 2, 1, 8, 32, true);
+            bulletStyle.large = this.createBulletStyleList(img, 0, 12, 4, 4, 1, 4, 64, false);
+        });
+        FileLoader.queue(FileLoader.loadPng, `bullet/bullet4`, (img) => {
+            bulletStyle.glow = this.createBulletStyleList(img, 0, 0, 4, 4, 2, 4, 64, false);
         });
         FileLoader.loadList(() => {
             this.write("", true);
@@ -333,7 +340,7 @@ class Game {
         Timer.waiting = [];
         player = {
             style: playerStyle[0],
-            size: 2.5,
+            size: 3.0,
             pos: { x: W / 2, y: H - H / 10 },
             direction: { x: 0, y: 0 },
             baseSpeed: 5,
@@ -347,6 +354,7 @@ class Game {
         };
         this.animationInit();
         bullets = [];
+        bulletList = [];
         this.spellCard = spellList[this.select.cardId()].render();
         setTimeout(() => {
             this.playing = true;
@@ -390,7 +398,7 @@ class Game {
         Timer.nextFrame();
         this.spellCard.nextFrame();
         let biu = false;
-        bullets = bullets.filter((bullet) => {
+        let current = bulletList.filter((bullet) => {
             bullet.move();
             if (bullet.cleared()) return false;
             if (BaseCheck.isCrash(player, bullet)) {
@@ -399,20 +407,28 @@ class Game {
             }
             return true;
         });
+        bulletList = [...current, ...bullets];
+        bullets = [];
         this.draw(biu);
         requestAnimationFrame(this.calcFrame);
     }
 
     drawBullet(bullet) {
-        let bulletCtx = this.painter.item;
+        let ctx = this.painter.item;
         let style = (bullet.style.animation ? bullet.style.sub[Math.floor(bullet.frame / 4) % bullet.style.sub.length] : bullet.style);
-        if (style.angle) {
-            bulletCtx.save();
-            bulletCtx.translate(bullet.pos.x, bullet.pos.y);
-            bulletCtx.rotate((bullet.drawAngle ?? bullet.angle) + PI / 2);
-            bulletCtx.drawImage(style.image, calcX(style), calcY(style));
-            bulletCtx.restore();
-        } else bulletCtx.drawImage(style.image, x(bullet), y(bullet));
+        if (style.angle || Object.keys(bullet.transform).length) {
+            ctx.save();
+            ctx.translate(bullet.pos.x, bullet.pos.y);
+            if (style.angle)
+                ctx.rotate((bullet.transform.angle ?? bullet.angle) + PI / 2);
+            if (!isNaN(bullet.transform.opacity) && !equal(bullet.transform.opacity, 1))
+                ctx.globalAlpha = bullet.transform.opacity;
+            if (!isNaN(bullet.transform.scale) && !equal(bullet.transform.scale, 1)) {
+                let finalSize = style.size * bullet.transform.scale;
+                ctx.drawImage(style.image, -finalSize / 2, -finalSize / 2, finalSize, finalSize);
+            } else ctx.drawImage(style.image, calcX(style), calcY(style));
+            ctx.restore();
+        } else ctx.drawImage(style.image, x(bullet), y(bullet));
     }
     draw(biu) {
         const {painter, animations} = this;
@@ -436,20 +452,29 @@ class Game {
                 (step) => ctx.drawImage(player.style.left[step + 4], x(player), y(player))
                 : (step) => ctx.drawImage(player.style.right[step + 4], x(player), y(player))
         );
-        let lighterList = [];
-        for (const bullet of bullets) {
-            if (bullet.lighter) {
-                lighterList.push(bullet);
-                continue;
+        let lighterList = [], topList = [];
+        if (this.spellCard.lighter) {
+            lighterList = bulletList;
+        } else {
+            for (const bullet of bulletList) {
+                if (bullet.lighter) {
+                    lighterList.push(bullet);
+                    continue;
+                } else if (bullet.top) {
+                    topList.push(bullet);
+                    continue;
+                }
+                this.drawBullet(bullet);
             }
-            this.drawBullet(bullet);
         }
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
-        for (const bullet of lighterList) {
-           this.drawBullet(bullet);
+        if (lighterList.length > 0) {
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            lighterList.forEach(bullet => this.drawBullet(bullet));
+            ctx.restore();
         }
-        ctx.restore();
+        if (topList.length > 0)
+            topList.forEach(bullet => this.drawBullet(bullet));
         animations.hitboxSpin.nextFrame((angleStep) => {
             let angle = 2 * PI * angleStep / animations.hitboxSpin.step;
             const turn = (scale) => {

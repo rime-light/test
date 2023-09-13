@@ -3,20 +3,13 @@ export default class SpellCard {
         this.basePos = { x: 0, y: 0 };
         this.globalFrame = 0;
         this.frame = 0;
+        this.lighter = false;
         this.value = {};
-        this.currentValue = {};
         this.waitTime = {};
         Object.assign(this, props);
     }
     setValue(value) {
         Object.assign(this.value, value);
-    }
-    setCurrentValue(value) {
-        Object.assign(this.currentValue, value);
-    }
-    setBothValue(value) {
-        this.setValue(value);
-        this.setCurrentValue(value);
     }
     frameEqual(value) {
         return this.frame === value;
