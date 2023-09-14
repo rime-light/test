@@ -9,14 +9,26 @@ export default class DreamSealWabi extends SpellCard {
             basePos: { x: W / 2, y: H / 6 },
             value: {
                 middle: 50,
-                small: 5
+                small: 5,
+                scatter: 8,
+                shootFast: 6,
+                shootSlow: 2
             },
             waitTime: {
-                middle: 60
+                middle: 60,
+                wave: 210,
+                scatter: 20
             }
         });
+        const whiteEnd = 50,
+            toRed = whiteEnd + 30,
+            redStart = toRed + 30,
+            redEnd = redStart + 50,
+            toMagenta = redEnd + 30,
+            magentaStart = toMagenta + 30;
+        this.setValue({ whiteEnd, toRed, redStart, redEnd, toMagenta, magentaStart });
         this.createMiddle();
-        // this.nextWave(0);
+        this.nextWave(0);
     }
     nextFrame() {
         super.nextFrame();
@@ -41,41 +53,69 @@ export default class DreamSealWabi extends SpellCard {
         }
         Timer.wait(() => this.createMiddle(), this.waitTime.middle);
     }
-    createSingle(angle) {
-        const {way, basePos} = this;
-        for (let i = 0; i < 2; i++) {
-            for (let j = 0; j < way; j++) {
+    createSingle(step, other) {
+        const {scatter, small} = this.value, {dir} = other;
+        if (step >= scatter) return;
+        let angle = random(0, 2 * PI), pos = {...this.basePos}, dis = 50;
+        pos.x += dir * Math.cos(angle - PI / 2) * dis;
+        pos.y += dir * Math.sin(angle - PI / 2) * dis;
+        for (let i = 0; i < small; i++) {
+            for (let j = 0; j < small; j++) {
                 // break;
                 let bullet = new Entity({
-                    size: Size.rice,
-                    style: bulletStyle.rice[Color16.green],
-                    pos: {...basePos},
-                    basePos: {...basePos},
-                    angle: createWay(angle + (i ? 0 : PI / way), way, j),
-                    baseSpeed: 1.8
+                    size: Size.paper,
+                    style: bulletStyle.paper[Color16.white],
+                    pos: {...pos},
+                    angle: createWay(angle, small, j, PI / 48),
+                    baseSpeed: (i + 1) * 1.5,
+                    top: true
                 });
                 bullet.setMove((item) => {
-                    item.speedAngle();
-                    let spinStart = 60, spinTime = 90;
-                    if (item.frame >= spinStart && item.frame < spinStart + spinTime) {
-                        item.angle += (i ? 1 : -1) * PI / (2 * spinTime);
-                        item.baseSpeed -= 1 / spinTime;
+                    let speed = 0;
+                    if (item.frame < this.value.whiteEnd) {
+                        speed = item.baseSpeed * (1 - item.frame / this.value.whiteEnd);
+                    } else if (item.frameEqual(this.value.whiteEnd)) {
+                        item.size = Size.small;
+                        item.style = bulletStyle.small[Color16.white];
+                    } else if (item.frameEqual(this.value.toRed)){
+                        item.style = bulletStyle.small[Color16.red];
+                    } else if (item.frame >= this.value.redStart && item.frame < this.value.redEnd) {
+                        if (item.frameEqual(this.value.redStart)) {
+                            item.baseSpeed = this.value.shootFast;
+                            item.size = Size.paper;
+                            item.style = bulletStyle.paper[Color16.red];
+                            item.shootTo();
+                        }
+                        speed = item.baseSpeed * (1 - (item.frame - this.value.redStart) / (this.value.redEnd - this.value.redStart));
+                    } else if (item.frameEqual(this.value.redEnd)) {
+                        item.size = Size.small;
+                        item.style = bulletStyle.small[Color16.red];
+                    } else if (item.frameEqual(this.value.toMagenta)){
+                        item.style = bulletStyle.small[Color16.magenta];
+                    } else if (item.frame >= this.value.magentaStart) {
+                        if (item.frameEqual(this.value.magentaStart)) {
+                            item.size = Size.paper;
+                            item.style = bulletStyle.paper[Color16.magenta];
+                            item.shootTo();
+                        }
+                        speed = this.value.shootSlow;
                     }
+                    item.speedAngle(item.angle, speed);
                 });
                 bullet.setClearedCheck((item) => {
-                    return BaseCheck.outOfScreen(item) && BaseCheck.timeOver(item, 120);
+                    return BaseCheck.timeOver(item, this.value.redEnd) && BaseCheck.outOfScreen(item);
                 });
                 bullets.push(bullet);
             }
         }
+        Timer.wait(() => this.createSingle(step + 1, other), this.waitTime.scatter);
     }
     nextWave(step) {
         super.nextWave();
-        this.createSingle(random(0, 2 * PI / this.way));
-        this.waitTime.layer = Math.max(40, this.waitTime.layer - 2);
+        this.createSingle(0, {dir: (step & 1) ? 1 : -1});
         Timer.wait(
-            () => this.nextWave(step),
-            this.waitTime.layer
+            () => this.nextWave(step + 1),
+            this.waitTime.wave
         );
     }
 }

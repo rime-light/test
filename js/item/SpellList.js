@@ -32,7 +32,7 @@ export const spellList = [
         render() { return new Day210(); }
     },
     {
-        name: "回灵「梦想封印　侘」(制作中)",
+        name: "回灵「梦想封印　侘」",
         render() { return new DreamSealWabi(); }
     }
 ]

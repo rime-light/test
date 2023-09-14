@@ -416,15 +416,15 @@ class Game {
     drawBullet(bullet) {
         let ctx = this.painter.item;
         let style = (bullet.style.animation ? bullet.style.sub[Math.floor(bullet.frame / 4) % bullet.style.sub.length] : bullet.style);
-        if (style.angle || Object.keys(bullet.transform).length) {
+        if (style.angle || Object.keys(bullet.transformValue).length) {
             ctx.save();
             ctx.translate(bullet.pos.x, bullet.pos.y);
             if (style.angle)
-                ctx.rotate((bullet.transform.angle ?? bullet.angle) + PI / 2);
-            if (!isNaN(bullet.transform.opacity) && !equal(bullet.transform.opacity, 1))
-                ctx.globalAlpha = bullet.transform.opacity;
-            if (!isNaN(bullet.transform.scale) && !equal(bullet.transform.scale, 1)) {
-                let finalSize = style.size * bullet.transform.scale;
+                ctx.rotate((bullet.transformValue.angle ?? bullet.angle) + PI / 2);
+            if (!isNaN(bullet.transformValue.opacity) && !equal(bullet.transformValue.opacity, 1))
+                ctx.globalAlpha = bullet.transformValue.opacity;
+            if (!isNaN(bullet.transformValue.scale) && !equal(bullet.transformValue.scale, 1)) {
+                let finalSize = style.size * bullet.transformValue.scale;
                 ctx.drawImage(style.image, -finalSize / 2, -finalSize / 2, finalSize, finalSize);
             } else ctx.drawImage(style.image, calcX(style), calcY(style));
             ctx.restore();

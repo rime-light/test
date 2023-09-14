@@ -10,9 +10,9 @@ export default class Entity {
         this.basePos = 0;
         this.baseSpeed = 0;
         this.angle = 0;
-        this.transformValue = {};
+        this.transform = {};
         Object.assign(this, props);
-        this.transform = {...this.transformValue};
+        this.transformValue = {...this.transform};
     }
     move() {
         return false;
@@ -34,14 +34,18 @@ export default class Entity {
     clearTransform(...names) {
         if (!names.length) {
             this.transform = {};
+            this.transformValue = {};
             return;
         }
-        names.forEach(name => delete this.transform[name]);
+        names.forEach(name => {
+            delete this.transform[name];
+            delete this.transformValue[name];
+        });
     }
     animation(name, totalFrame = 10, endValue = 1, currentFrame = this.frame) {
         if (currentFrame > totalFrame) return -1;
-        let startValue = this.transformValue[name];
-        this.transform[name] = startValue + (endValue - startValue) * currentFrame / totalFrame;
+        let startValue = this.transform[name];
+        this.transformValue[name] = startValue + (endValue - startValue) * currentFrame / totalFrame;
         return currentFrame === totalFrame ? 0 : 1;
     }
     speedXY() {

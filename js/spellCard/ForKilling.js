@@ -52,7 +52,7 @@ export default class ForKilling extends SpellCard {
             pos: {...glowBullet.pos},
             angle: glowBullet.angle,
             baseSpeed: glowBullet.baseSpeed,
-            transformValue: { opacity: 0, scale: 1.2 }
+            transform: { opacity: 0, scale: 1.2 }
         });
         bullet.setMove((item) => {
             item.animation("opacity");
