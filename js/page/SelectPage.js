@@ -59,7 +59,7 @@ export default class SelectPage {
     update() {
         let ctx = this.ctx;
         ctx.save();
-        ctx.font = "bold 16px Arial";
+        ctx.font = "bold 16px 宋体";
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = "#0000005f";
         ctx.fillRect(0, 0, W, H);
@@ -73,6 +73,10 @@ export default class SelectPage {
             if (this.line !== i)
                 ctx.fillText(spellList[k].name, W >> 1, (i + 1) * H / 9);
         }
+        ctx.font = "12px 黑体";
+        ctx.fillStyle = "white";
+        ctx.fillText(`页面 ${this.page + 1}/${this.pageCount}`, W >> 1, H - 6);
         ctx.restore();
+
     }
 }

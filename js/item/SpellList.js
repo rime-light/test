@@ -5,6 +5,7 @@ import Mishaguji from "../spellCard/Mishaguji.js";
 import Day210 from "../spellCard/Day210.js";
 import DreamSealWabi from "../spellCard/DreamSealWabi.js";
 import ForKilling from "../spellCard/ForKilling.js";
+import MetsuzaiTemple from "../spellCard/MetsuzaiTemple.js";
 
 export const spellList = [
     {
@@ -34,5 +35,9 @@ export const spellList = [
     {
         name: "回灵「梦想封印　侘」",
         render() { return new DreamSealWabi(); }
+    },
+    {
+        name: "藤原「灭罪寺院伤」",
+        render() { return new MetsuzaiTemple(); }
     }
 ]

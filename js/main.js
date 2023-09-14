@@ -83,7 +83,7 @@ class Game {
         });
         checkbox.addEventListener("change", frameControl);
 
-        painter.text.font = "bold 28px Arial";
+        painter.text.font = "bold 28px 黑体";
         painter.text.textAlign = "center";
         painter.text.lineWidth = 1;
         painter.text.fillStyle = "lightblue";
@@ -401,7 +401,7 @@ class Game {
         let current = bulletList.filter((bullet) => {
             bullet.move();
             if (bullet.cleared()) return false;
-            if (BaseCheck.isCrash(player, bullet)) {
+            if (!bullet.safe && BaseCheck.isCrash(player, bullet)) {
                 biu = true;
                 // return false;
             }

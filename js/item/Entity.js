@@ -2,6 +2,7 @@ export default class Entity {
     constructor(props) {
         this.frame = 0;
         this.size = 0;
+        this.safe = false;
         this.style = null;
         this.lighter = false;
         this.top = false;
@@ -10,6 +11,7 @@ export default class Entity {
         this.basePos = 0;
         this.baseSpeed = 0;
         this.angle = 0;
+        this.change = 0;
         this.transform = {};
         Object.assign(this, props);
         this.transformValue = {...this.transform};

@@ -28,7 +28,8 @@ export default class DreamSealWabi extends SpellCard {
             magentaStart = toMagenta + 30;
         this.setValue({ whiteEnd, toRed, redStart, redEnd, toMagenta, magentaStart });
         this.createMiddle();
-        this.nextWave(0);
+        Timer.wait(() => this.nextWave(0), 4 * this.waitTime.scatter);
+
     }
     nextFrame() {
         super.nextFrame();
