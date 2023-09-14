@@ -55,7 +55,8 @@ export default class ForKilling extends SpellCard {
             transformValue: { opacity: 0, scale: 1.2 }
         });
         bullet.setMove((item) => {
-            if (!(item.animation("opacity", 10) && item.animation("scale", 10, 1.05)))
+            item.animation("opacity");
+            if (item.animation("scale", 10, 1.05) === 0)
                 item.clearTransform("opacity");
             item.speedAngle();
         });

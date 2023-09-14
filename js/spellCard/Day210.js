@@ -34,9 +34,12 @@ export default class Day210 extends SpellCard {
                     pos: {...basePos},
                     basePos: {...basePos},
                     angle: createWay(angle + (i ? 0 : PI / way), way, j),
-                    baseSpeed: 7.5
+                    baseSpeed: 7.5,
+                    lighter: true
                 });
                 bullet.setMove((item) => {
+                    if (item.frameEqual(5))
+                        item.lighter = false;
                     item.speedAngle();
                     let slowTime = 80,
                         spinTime = 90;

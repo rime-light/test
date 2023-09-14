@@ -39,10 +39,10 @@ export default class Entity {
         names.forEach(name => delete this.transform[name]);
     }
     animation(name, totalFrame = 10, endValue = 1, currentFrame = this.frame) {
-        if (currentFrame > totalFrame) return false;
+        if (currentFrame > totalFrame) return -1;
         let startValue = this.transformValue[name];
         this.transform[name] = startValue + (endValue - startValue) * currentFrame / totalFrame;
-        return true;
+        return currentFrame === totalFrame ? 0 : 1;
     }
     speedXY() {
         this.pos.x += this.speed.x;
