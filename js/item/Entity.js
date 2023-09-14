@@ -4,6 +4,7 @@ export default class Entity {
         this.size = 0;
         this.safe = false;
         this.style = null;
+        this.alive = true;
         this.lighter = false;
         this.top = false;
         this.pos = { x: 0, y: 0 };

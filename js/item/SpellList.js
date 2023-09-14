@@ -6,6 +6,7 @@ import Day210 from "../spellCard/Day210.js";
 import DreamSealWabi from "../spellCard/DreamSealWabi.js";
 import ForKilling from "../spellCard/ForKilling.js";
 import MetsuzaiTemple from "../spellCard/MetsuzaiTemple.js";
+import ShrineVisits from "../spellCard/ShrineVisits.js";
 
 export const spellList = [
     {
@@ -39,5 +40,9 @@ export const spellList = [
     {
         name: "藤原「灭罪寺院伤」",
         render() { return new MetsuzaiTemple(); }
+    },
+    {
+        name: "恨符「丑时参拜第七日」",
+        render() { return new ShrineVisits(); }
     }
 ]

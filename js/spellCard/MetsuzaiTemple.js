@@ -35,7 +35,7 @@ export default class MetsuzaiTemple extends SpellCard {
             if (!item.change && (item.pos.y < -item.style.size || item.pos.y > H + item.style.size)) {
                 item.style = bulletStyle.paper[Color16.darkmagenta];
                 item.angle += PI;
-                item.baseSpeed = 2;
+                item.baseSpeed = 2.2;
                 item.change++;
                 Timer.wait(() => { item.change++ }, 5);
             }

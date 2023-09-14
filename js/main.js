@@ -83,7 +83,7 @@ class Game {
         });
         checkbox.addEventListener("change", frameControl);
 
-        painter.text.font = "bold 28px 黑体";
+        painter.text.font = "bold 28px Arial";
         painter.text.textAlign = "center";
         painter.text.lineWidth = 1;
         painter.text.fillStyle = "lightblue";
@@ -116,6 +116,7 @@ class Game {
             };
             bulletStyle.small = this.createBulletStyleList(img, 0, 3, 1, 1, 1, 16, 16, false);
             bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 16, true);
+            bulletStyle.needle = this.createBulletStyleList(img, 0, 6, 1, 1, 1, 16, 16, true);
             bulletStyle.paper = this.createBulletStyleList(img, 0, 7, 1, 1, 1, 16, 16, true);
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet2`, (img) => {

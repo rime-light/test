@@ -77,6 +77,5 @@ export default class SelectPage {
         ctx.fillStyle = "white";
         ctx.fillText(`页面 ${this.page + 1}/${this.pageCount}`, W >> 1, H - 6);
         ctx.restore();
-
     }
 }
