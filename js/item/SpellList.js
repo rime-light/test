@@ -7,6 +7,7 @@ import DreamSealWabi from "../spellCard/DreamSealWabi.js";
 import ForKilling from "../spellCard/ForKilling.js";
 import MetsuzaiTemple from "../spellCard/MetsuzaiTemple.js";
 import ShrineVisits from "../spellCard/ShrineVisits.js";
+import IllusionSeeker from "../spellCard/IllusionSeeker.js";
 
 export const spellList = [
     {
@@ -44,5 +45,9 @@ export const spellList = [
     {
         name: "恨符「丑时参拜第七日」",
         render() { return new ShrineVisits(); }
+    },
+    {
+        name: "狂视「狂视调律(Illusion Seeker)」",
+        render() { return new IllusionSeeker(); }
     }
 ]

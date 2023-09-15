@@ -7,7 +7,7 @@ export default class FileLoader {
     }
     static loadImg(type, filename, loadedFn, failedFn) {
         let img = new Image();
-        img.src = `images/${filename}.${type}`;
+        img.src = `image/${filename}.${type}`;
         img.onload = () => {
             loadedFn(img);
         }

@@ -1,7 +1,7 @@
 import CanvasAnimation from "./util/Animation.js";
 import FileLoader from "./util/FileLoader.js";
 import Timer from "./util/Timer.js";
-import Entity, {BaseCheck} from "./item/Entity.js"
+import {BaseCheck} from "./item/Entity.js"
 import {spellList} from "./item/SpellList.js";
 import SelectPage from "./page/SelectPage.js";
 
@@ -41,9 +41,8 @@ class Game {
         this.select = new SelectPage(painter.text);
         changeSize();
 
-        document.getElementById("options").addEventListener("keydown", (event) => {
-            if (event.key.startsWith("Arrow") || event.key === " ")
-                event.preventDefault();
+        document.getElementById("options").addEventListener("click", (event) => {
+            event.target.blur();
         });
 
         let storageValue = localStorage.getItem("quality");
@@ -118,6 +117,7 @@ class Game {
             bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 16, true);
             bulletStyle.needle = this.createBulletStyleList(img, 0, 6, 1, 1, 1, 16, 16, true);
             bulletStyle.paper = this.createBulletStyleList(img, 0, 7, 1, 1, 1, 16, 16, true);
+            bulletStyle.firearm = this.createBulletStyleList(img, 0, 8, 1, 1, 1, 16, 16, true);
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet2`, (img) => {
             bulletStyle.middle = this.createBulletStyleList(img, 0, 2, 2, 2, 1, 8, 32, false);
@@ -338,6 +338,7 @@ class Game {
         this.write("", true);
         this.playing = false;
         this.paused = false;
+        this.biuTime = 0;
         Timer.waiting = [];
         player = {
             style: playerStyle[0],
@@ -398,6 +399,7 @@ class Game {
 
         Timer.nextFrame();
         this.spellCard.nextFrame();
+        this.biuTime--;
         let biu = false;
         let current = bulletList.filter((bullet) => {
             bullet.move();
@@ -408,9 +410,12 @@ class Game {
             }
             return true;
         });
+        if (biu) {
+            this.biuTime = 6;
+        }
         bulletList = [...current, ...bullets];
         bullets = [];
-        this.draw(biu);
+        this.draw();
         requestAnimationFrame(this.calcFrame);
     }
 
@@ -431,12 +436,12 @@ class Game {
             ctx.restore();
         } else ctx.drawImage(style.image, x(bullet), y(bullet));
     }
-    draw(biu) {
+    draw() {
         const {painter, animations} = this;
         const ctx = painter.item;
         this.gameViewClear();
         ctx.drawImage(background, 0, 0);
-        if (biu) {
+        if (this.biuTime > 0) {
             ctx.fillStyle = "#ff00003f";
             ctx.fillRect(0, 0, W, H);
         }

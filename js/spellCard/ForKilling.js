@@ -20,7 +20,7 @@ export default class ForKilling extends SpellCard {
     nextFrame() {
         super.nextFrame();
     }
-    createWave(angle) {
+    createWave(angle, dir) {
         const basePos = {...this.basePos}, {wave: way} = this.value;
         basePos.x += randomInt(-50, 50);
         basePos.y -= randomInt(10, 30);
@@ -31,7 +31,7 @@ export default class ForKilling extends SpellCard {
                 lighter: true,
                 pos: {...basePos},
                 basePos: {...basePos},
-                angle: createWay(angle, way, i),
+                angle: createWay(angle, way, dir ? i : way - i - 1),
                 baseSpeed: 1.5
             });
             bullet.setMove((item) => {
@@ -65,10 +65,10 @@ export default class ForKilling extends SpellCard {
     }
     nextWave(step) {
         super.nextWave();
-        this.createWave(random(0, 2 * PI / this.value.wave));
+        this.createWave(random(0, 2 * PI / this.value.wave), step & 1);
         this.waitTime.wave = Math.max(100, this.waitTime.wave - 3);
         Timer.wait(
-            () => this.nextWave(step),
+            () => this.nextWave(step + 1),
             this.waitTime.wave
         );
     }

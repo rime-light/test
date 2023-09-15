@@ -38,6 +38,7 @@ export const Color4 = {
 export const Size = {
     rice: 2.0,
     needle: 2.0,
+    firearm: 2.0,
     paper: 2.4,
     small: 3.0,
     // star: 3.0,

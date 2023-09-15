@@ -1,7 +1,6 @@
 export default class Timer {
     static waiting = [];
-    static wait(fn, frame, who) {
-        who && (fn = fn.bind(who));
+    static wait(fn, frame) {
         if (frame <= 0) {
             fn();
             return 0;
@@ -13,22 +12,24 @@ export default class Timer {
             fn,
             frame,
             timestamp,
-            currentFrame: 0
+            currentFrame: 0,
+            canceled: false
         });
         return `${timestamp}${id}`;
     }
     static cancel(timerId) {
-        for (let i = 0; i < this.waiting.length; i++) {
-            let single = this.waiting[i];
+        for (let single of this.waiting) {
             if (timerId === `${single.timestamp}${single.id}`) {
-                this.waiting.splice(i, 1);
-                break;
+                single.canceled = true;
+                return { remain: single.frame - single.currentFrame, fn: single.fn };
             }
         }
+        return null;
     }
     static nextFrame() {
         let runList = [];
         this.waiting = this.waiting.filter((single) => {
+            if (single.canceled) return false;
             single.currentFrame++;
             if (single.currentFrame >= single.frame) {
                 runList.push(single.fn);
