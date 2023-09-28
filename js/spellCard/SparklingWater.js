@@ -28,11 +28,11 @@ export default class SparklingWater extends SpellCard {
             return;
         }
         if (this.frameEqual(1)) {
-            let range = H / (2 * (this.value.row - 1));
+            let range = H / this.value.row;
             this.createSin(0, {
                 priority: this.wave,
                 offsetX: PI / 2,
-                offsetY: random(-range, range)
+                offsetY: random(-1, 1) * range
             });
         }
         if (this.frameEqual(340)) this.createShootTo(0);

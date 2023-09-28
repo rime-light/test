@@ -63,6 +63,8 @@ export default class SelectPage {
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = "#0000005f";
         ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#e8e8af1f";
+        ctx.fillRect(0, Math.floor(this.line * H / 9 + 4 * H / 63), W, Math.floor(2 * H / 27));
         ctx.fillStyle = "#7fd9d9";
         ctx.fillText(spellList[this.cardId()].name, W >> 1, (this.line + 1) * H / 9);
         ctx.fillStyle = "#e8e8af";
@@ -73,7 +75,7 @@ export default class SelectPage {
             if (this.line !== i)
                 ctx.fillText(spellList[k].name, W >> 1, (i + 1) * H / 9);
         }
-        ctx.font = "12px 黑体";
+        ctx.font = "12px system-ui";
         ctx.fillStyle = "white";
         ctx.fillText(`页面 ${this.page + 1}/${this.pageCount}`, W >> 1, H - 6);
         ctx.restore();

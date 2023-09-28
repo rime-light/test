@@ -8,6 +8,8 @@ import ForKilling from "../spellCard/ForKilling.js";
 import MetsuzaiTemple from "../spellCard/MetsuzaiTemple.js";
 import ShrineVisits from "../spellCard/ShrineVisits.js";
 import IllusionSeeker from "../spellCard/IllusionSeeker.js";
+import Macrocosm from "../spellCard/Macrocosm.js";
+import OrleansDolls from "../spellCard/OrleansDolls.js";
 
 export const spellList = [
     {
@@ -49,5 +51,13 @@ export const spellList = [
     {
         name: "狂视「狂视调律(Illusion Seeker)」",
         render() { return new IllusionSeeker(); }
+    },
+    {
+        name: "「神灵大宇宙」",
+        render() { return new Macrocosm(); }
+    },
+    {
+        name: "苍符「博爱的奥尔良人偶」",
+        render() { return new OrleansDolls(); }
     }
 ]

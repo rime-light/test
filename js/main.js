@@ -41,6 +41,10 @@ class Game {
         this.select = new SelectPage(painter.text);
         changeSize();
 
+        document.getElementById("options").addEventListener("keydown", (event) => {
+            event.preventDefault();
+            event.target.blur();
+        });
         document.getElementById("options").addEventListener("click", (event) => {
             event.target.blur();
         });
@@ -82,7 +86,7 @@ class Game {
         });
         checkbox.addEventListener("change", frameControl);
 
-        painter.text.font = "bold 28px Arial";
+        painter.text.font = "bold 28px system-ui";
         painter.text.textAlign = "center";
         painter.text.lineWidth = 1;
         painter.text.fillStyle = "lightblue";
@@ -111,8 +115,10 @@ class Game {
             bulletStyle.water = {
                 animation: true,
                 size: sub[0].size,
-                sub
+                angle: sub[0].angle,
+                image: sub.map(single => single.image)
             };
+            bulletStyle.scale = this.createBulletStyleList(img, 0, 1, 1, 1, 1, 16, 16, true);
             bulletStyle.small = this.createBulletStyleList(img, 0, 3, 1, 1, 1, 16, 16, false);
             bulletStyle.rice = this.createBulletStyleList(img, 0, 4, 1, 1, 1, 16, 16, true);
             bulletStyle.needle = this.createBulletStyleList(img, 0, 6, 1, 1, 1, 16, 16, true);
@@ -345,8 +351,8 @@ class Game {
             size: 3.0,
             pos: { x: W / 2, y: H - H / 10 },
             direction: { x: 0, y: 0 },
-            baseSpeed: 5,
-            slowSpeed: 2,
+            baseSpeed: 4.5,
+            slowSpeed: 1.8,
             diagonalMove: false,
             slowMove: false,
             prev: {
@@ -421,7 +427,8 @@ class Game {
 
     drawBullet(bullet) {
         let ctx = this.painter.item;
-        let style = (bullet.style.animation ? bullet.style.sub[Math.floor(bullet.frame / 4) % bullet.style.sub.length] : bullet.style);
+        let style = {...bullet.style};
+        if (style.animation) style.image = style.image[Math.floor(bullet.frame / 5) % style.image.length];
         if (style.angle || Object.keys(bullet.transformValue).length) {
             ctx.save();
             ctx.translate(bullet.pos.x, bullet.pos.y);

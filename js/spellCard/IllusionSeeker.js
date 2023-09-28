@@ -10,7 +10,7 @@ export default class IllusionSeeker extends SpellCard {
             waitTime: {
                 wave: 60,
                 fast: 8,
-                slow: 24,
+                slow: 25,
                 open: 60
             }
         });
@@ -18,7 +18,7 @@ export default class IllusionSeeker extends SpellCard {
         this.timerId = [];
         this.timer = [];
         this.nextWave(0);
-        Timer.wait(() => this.openEye(true), 260);
+        Timer.wait(() => this.openEye(true), 255);
     }
     nextFrame() {
         super.nextFrame();
@@ -40,7 +40,7 @@ export default class IllusionSeeker extends SpellCard {
             this.timer = [];
         }
     }
-    createRice(step, other) {
+    createFirearm(step, other) {
         if (step >= 2) return;
         const {pos, fast, color} = other;
         let bullet = new Entity({
@@ -67,7 +67,7 @@ export default class IllusionSeeker extends SpellCard {
             return item.pos.y < -item.style.size || item.pos.y > H + item.style.size;
         });
         bullets.push(bullet);
-        this.createRice(step + 1, other);
+        this.createFirearm(step + 1, other);
     }
     createLarge(pos, dir, color) {
         let bullet = new Entity({
@@ -88,26 +88,27 @@ export default class IllusionSeeker extends SpellCard {
             } else if (item.animation("opacity", 20, 0.5) === -1) {
                 item.transformValue.opacity = 0.5;
             }
-            item.animation("scale", 20, 0.75);
+            item.animation("scale", 20, 0.8);
             item.speedAngle();
             if (item.frameMatch(this.waitTime.fast))
-                this.createRice(0, { pos: item.pos, fast: true, color: color === Color4.red ? Color16.red : Color16.blue });
+                this.createFirearm(0, { pos: item.pos, fast: true, color: color === Color4.red ? Color16.red : Color16.blue });
             if (item.frameMatch(this.waitTime.slow))
-                this.createRice(0, {pos: item.pos, fast: false, color: color === Color4.red ? Color16.red : Color16.blue});
+                this.createFirearm(0, {pos: item.pos, fast: false, color: color === Color4.red ? Color16.red : Color16.blue});
         });
         bullet.setClearedCheck(BaseCheck.outOfScreen);
         bullets.push(bullet);
+
     }
     nextWave(step) {
         super.nextWave();
         this.timerId.push(Timer.wait(() => this.createLarge({
             x: 0,
             y: this.basePos.y + random(-1, 1) * 30
-        }, 0, Color4.red), randomInt(0, 10)));
+        }, 0, Color4.red), randomInt(0, 15)));
         this.timerId.push(Timer.wait(() => this.createLarge({
             x: W,
             y: this.basePos.y + random(-1, 1) * 30
-        }, PI, Color4.blue), randomInt(0, 10)));
+        }, PI, Color4.blue), randomInt(0, 15)));
         this.timerId.push(Timer.wait(
             () => this.nextWave(step + 1),
             this.waitTime.wave

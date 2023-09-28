@@ -31,11 +31,12 @@ export default class Day210 extends SpellCard {
                 let bullet = new Entity({
                     size: Size.rice,
                     style: bulletStyle.rice[i ? Color16.blue : Color16.green],
+                    lighter: true,
                     pos: {...basePos},
                     basePos: {...basePos},
                     angle: createWay(angle + (i ? 0 : PI / way), way, j),
                     baseSpeed: 7.5,
-                    lighter: true
+
                 });
                 bullet.setMove((item) => {
                     if (item.frameEqual(5))
@@ -45,7 +46,7 @@ export default class Day210 extends SpellCard {
                         spinTime = 90;
                     if (item.frame < spinTime) {
                         item.angle += (i ? -1 : 1) * 1.75 * PI / spinTime;
-                    } else if (item.frame === spinTime) {
+                    } else if (item.frameEqual(spinTime)) {
                         item.angle += PI / 15 * random(-step, step) / this.value.line;
                     }
                     if (item.frame < slowTime) {

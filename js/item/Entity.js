@@ -46,7 +46,7 @@ export default class Entity {
         });
     }
     animation(name, totalFrame = 10, endValue = 1, currentFrame = this.frame) {
-        if (currentFrame > totalFrame) return -1;
+        if (currentFrame < 0 || currentFrame > totalFrame) return -1;
         let startValue = this.transform[name];
         this.transformValue[name] = startValue + (endValue - startValue) * currentFrame / totalFrame;
         return currentFrame === totalFrame ? 0 : 1;
