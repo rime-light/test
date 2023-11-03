@@ -10,6 +10,7 @@ import ShrineVisits from "../spellCard/ShrineVisits.js";
 import IllusionSeeker from "../spellCard/IllusionSeeker.js";
 import Macrocosm from "../spellCard/Macrocosm.js";
 import OrleansDolls from "../spellCard/OrleansDolls.js";
+import IntermittentSpring from "../spellCard/IntermittentSpring.js";
 
 export const spellList = [
     {
@@ -59,5 +60,9 @@ export const spellList = [
     {
         name: "苍符「博爱的奥尔良人偶」",
         render() { return new OrleansDolls(); }
+    },
+    {
+        name: "核热「炽热间歇泉」",
+        render() { return new IntermittentSpring(); }
     }
 ]

@@ -10,7 +10,7 @@ export default class OrleansDolls extends SpellCard {
             value: {
                 doll: 8,
                 level: 0,
-                radius: [100, 60, 50],
+                radius: [100, 60, 80],
                 maxLevel: 4,
                 speedLevel: [1.0, 1.2, 1.6, 2.0, 2.5, 3.2],
                 speedSp: [0, 3.0, 3.0, 3.5, 0],
@@ -30,7 +30,6 @@ export default class OrleansDolls extends SpellCard {
     }
     createSingle(pos, angle, speed, notChange) {
         const {level, maxLevel, speedLevel, speedSp, spLevel} = this.value, color = this.value.color[level];
-        angle += random(-1, 1) * PI / 180;
         let bullet = new Entity({
             size: Size.scale,
             style: bulletStyle.scale[color],
@@ -67,7 +66,7 @@ export default class OrleansDolls extends SpellCard {
             }
         });
         bullet.setClearedCheck((item) => {
-            return !item.alive || (level >= maxLevel && BaseCheck.timeOver(item, 60) && BaseCheck.outOfScreen(item));
+            return !item.alive || (level >= maxLevel && BaseCheck.outOfScreen(item));
         });
         bullets.push(bullet);
     }
@@ -77,7 +76,7 @@ export default class OrleansDolls extends SpellCard {
         this.nextLevel();
         const {doll: way, radius} = this.value,
             r = radius[step],
-            baseAngle = random(0, 2 * PI);
+            baseAngle = PI / 2;
         for (let i = 0; i < way; i++) {
             let angle = createWay(baseAngle, way, i);
             this.createSingle(

@@ -51,10 +51,11 @@ export default class Entity {
         this.transformValue[name] = startValue + (endValue - startValue) * currentFrame / totalFrame;
         return currentFrame === totalFrame ? 0 : 1;
     }
-    speedXY() {
+    speedXY(setAngle) {
         this.pos.x += this.speed.x;
         this.pos.y += this.speed.y;
-    };
+        if (setAngle) this.angle = posAngle({x: 0, y: 0}, this.speed);
+    }
     speedAngle(angle = this.angle, speed = this.baseSpeed) {
         this.pos.x += speed * Math.cos(angle);
         this.pos.y += speed * Math.sin(angle);
