@@ -6,12 +6,12 @@ import {Color16, Size} from "../item/Style.js";
 export default class Day210 extends SpellCard {
     constructor() {
         super({
-            basePos: { x: W / 2, y: H / 4 },
+            basePos: { x: W / 2, y: H / 3 },
             value: {
-                line: 25
+                line: 30
             },
             waitTime: {
-                line: 5,
+                line: 4,
                 wave: 240
             }
         });
@@ -27,7 +27,6 @@ export default class Day210 extends SpellCard {
         const {way, basePos} = this;
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < way; j++) {
-                // break;
                 let bullet = new Entity({
                     size: Size.rice,
                     style: bulletStyle.rice[i ? Color16.blue : Color16.green],
@@ -35,26 +34,21 @@ export default class Day210 extends SpellCard {
                     pos: {...basePos},
                     basePos: {...basePos},
                     angle: createWay(angle + (i ? 0 : PI / way), way, j),
-                    baseSpeed: 7.5,
-
+                    baseSpeed: 6
                 });
+                let offsetAngle = PI / 12 * random(-step, step) / this.value.line;
                 bullet.setMove((item) => {
                     if (item.frameEqual(5))
                         item.lighter = false;
                     item.speedAngle();
-                    let slowTime = 80,
-                        spinTime = 90;
+                    let spinTime = 120;
                     if (item.frame < spinTime) {
-                        item.angle += (i ? -1 : 1) * 1.75 * PI / spinTime;
-                    } else if (item.frameEqual(spinTime)) {
-                        item.angle += PI / 15 * random(-step, step) / this.value.line;
-                    }
-                    if (item.frame < slowTime) {
-                        item.baseSpeed -= 5 / slowTime;
+                        item.angle += (i ? -1 : 1) * (2 * PI + offsetAngle) / spinTime;
+                        item.baseSpeed -= 3.5 / spinTime;
                     }
                 });
                 bullet.setClearedCheck((item) => {
-                    return BaseCheck.outOfScreen(item) && BaseCheck.timeOver(item, 120);
+                    return BaseCheck.timeOver(item, 120) && BaseCheck.outOfScreen(item);
                 });
                 bullets.push(bullet);
             }
