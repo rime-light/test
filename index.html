@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Demo</title>
     <link href="css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="css/button.css" rel="stylesheet" type="text/css"/>
     <script src="js/base.js"></script>
     <script type="module" src="js/main.js"></script>
 </head>
@@ -18,21 +19,20 @@
                 <span>低</span>
             </label>
             <label>
-                <input type="radio" name="quality" value="medium">
-                <span>中</span>
-            </label>
-            <label>
                 <input type="radio" name="quality" value="high">
                 <span>高</span>
             </label>
         </div>
         <label class="layout-v block">
             <span class="layout-h">
-                <input type="checkbox" id="frame-control">
+                <input type="checkbox" id="frame-control"/>
                 <span>帧率控制</span>
             </span>
             <span style="font-size: 10px">(若帧率正常请关闭)</span>
         </label>
+        <div>
+            <button id="record">录制</button>
+        </div>
     </div>
 </div>
 </body>

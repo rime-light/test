@@ -4,6 +4,7 @@ import Timer from "./util/Timer.js";
 import {BaseCheck} from "./item/Entity.js"
 import {spellList} from "./item/SpellList.js";
 import SelectPage from "./page/SelectPage.js";
+import Recorder from "./util/Recorder.js";
 
 class Game {
     constructor() {
@@ -21,20 +22,29 @@ class Game {
         gameBlock.style.width = `${W}px`;
         gameBlock.style.height = `${H}px`;
         let painter = {
-            item: true,
-            text: true
+            record: null,
+            item: null,
+            text: null
         };
-        let dpr = window.devicePixelRatio;
+        this.displayList = [];
+        let dpr = Math.max(window.devicePixelRatio, 1.98);
         Object.keys(painter).forEach((id) => {
             let canvas = document.createElement("canvas");
             let ctx = canvas.getContext("2d");
-            canvas.className = "game";
+            // canvas.width = W;
+            // canvas.height = H;
             canvas.width = Math.round(W * dpr);
             canvas.height = Math.round(H * dpr);
-            canvas.style.width = `${W}px`;
-            canvas.style.height = `${H}px`;
-            ctx.scale(dpr, dpr);
-            gameBlock.appendChild(canvas);
+            if (id !== "record") {
+                canvas.className = "game";
+                canvas.style.width = `${W}px`;
+                canvas.style.height = `${H}px`;
+                ctx.scale(dpr, dpr);
+                gameBlock.appendChild(canvas);
+                this.displayList.push(canvas);
+            } else {
+                Recorder.set(canvas);
+            }
             painter[id] = ctx;
         });
         this.painter = painter;
@@ -50,7 +60,7 @@ class Game {
         });
 
         let storageValue = localStorage.getItem("quality");
-        if (!["low", "medium", "high"].includes(storageValue)) {
+        if (!["low", "high"].includes(storageValue)) {
             storageValue = "high";
         }
         const changeQuality = (value) => {
@@ -86,6 +96,20 @@ class Game {
         });
         checkbox.addEventListener("change", frameControl);
 
+        const recordButton = document.getElementById("record");
+        recordButton.addEventListener("click", () => {
+            if (Recorder.recording) {
+                Recorder.stop();
+                recordButton.innerHTML = "录制";
+                recordButton.classList.remove("recording");
+            } else {
+                Recorder.start();
+                this.copyForRecord();
+                recordButton.innerHTML = "停止";
+                recordButton.classList.add("recording");
+            }
+        });
+
         painter.text.font = "bold 28px system-ui";
         painter.text.textAlign = "center";
         painter.text.lineWidth = 1;
@@ -99,7 +123,7 @@ class Game {
             background = img;
             painter.item.drawImage(img, 0, 0);
         });
-        FileLoader.queue(FileLoader.loadPng, "player/sloweffect", (img) => {
+        FileLoader.queue(FileLoader.loadPng, "player/slow_effect", (img) => {
             let size = 4;
             hitbox = {
                 image: FileLoader.saveAsCanvas(img, 0, 0, size, size, { opacity: 0.8 }),
@@ -146,7 +170,7 @@ class Game {
                     case "ArrowUp":
                         if (this.playing) {
                             this.moveVCount++;
-                            if (!this.pressed.get("ArrowDown")) player.direction.y = -1;
+                            player.direction.y = -1;
                         } else {
                             this.select.prevLine();
                         }
@@ -154,7 +178,7 @@ class Game {
                     case "ArrowDown":
                         if (this.playing) {
                             this.moveVCount++;
-                            if (!this.pressed.get("ArrowUp")) player.direction.y = 1;
+                            player.direction.y = 1;
                         } else {
                             this.select.nextLine();
                         }
@@ -162,7 +186,7 @@ class Game {
                     case "ArrowLeft":
                         if (this.playing) {
                             this.moveHCount++;
-                            if (!this.pressed.get("ArrowRight")) player.direction.x = -1;
+                            player.direction.x = -1;
                         } else {
                             this.select.prevPage();
                         }
@@ -170,7 +194,7 @@ class Game {
                     case "ArrowRight":
                         if (this.playing) {
                             this.moveHCount++;
-                            if (!this.pressed.get("ArrowLeft")) player.direction.x = 1;
+                            player.direction.x = 1;
                         } else {
                             this.select.nextPage();
                         }
@@ -261,6 +285,7 @@ class Game {
         this.init = this.init.bind(this);
         this.draw = this.draw.bind(this);
         this.calcFrame = this.calcFrame.bind(this);
+        this.copyForRecord = this.copyForRecord.bind(this);
     }
 
     pauseToggle() {
@@ -269,7 +294,7 @@ class Game {
             this.paused = false;
             requestAnimationFrame(this.calcFrame);
         } else {
-            let ctx = this.painter.text;
+            const ctx = this.painter.text;
             this.paused = true;
             ctx.save();
             ctx.fillStyle = "#000000af"
@@ -370,6 +395,13 @@ class Game {
         }, 50);
     }
 
+    copyForRecord() {
+        if (!Recorder.recording) return;
+        const ctx = this.painter.record;
+        this.displayList.forEach((canvas) => ctx.drawImage(canvas, 0, 0));
+        requestAnimationFrame(this.copyForRecord);
+    }
+
     calcFrame(timestamp) {
         if (!this.playing || this.paused) return;
         if (this.frameLocked) {
@@ -426,7 +458,7 @@ class Game {
     }
 
     drawBullet(bullet) {
-        let ctx = this.painter.item;
+        const ctx = this.painter.item;
         let style = {...bullet.style};
         if (style.animation) style.image = style.image[Math.floor(bullet.frame / 5) % style.image.length];
         if (style.angle || Object.keys(bullet.transformValue).length) {

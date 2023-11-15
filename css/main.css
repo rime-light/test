@@ -5,6 +5,8 @@ body {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
+    background: linear-gradient(to bottom, black, grey, black);
+    color: aliceblue;
 }
 .layout-v {
     display: flex;
@@ -32,7 +34,7 @@ body {
 }
 .game:last-child {
     box-sizing: border-box;
-    border: 1px solid black;
+    border: 1px solid darkgray;
 }
 #container {
     --expand: 1;
@@ -42,26 +44,4 @@ body {
 
 input {
     outline: none;
-}
-
-button {
-    margin: 10px;
-    width: 100px;
-    height: 30px;
-    font-size: 15px;
-    background-color: #e3e3e3;
-    border: 2px solid gray;
-    border-radius: 10px;
-    outline: none;
-    transition: background-color 0.2s;
-}
-
-button:hover {
-    border-width: 3px;
-    background-color: #f0f0f0;
-}
-
-button:active {
-    transform: scale(0.97, 0.97);
-    background-color: #d8d8d8;
 }

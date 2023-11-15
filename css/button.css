@@ -1,0 +1,29 @@
+button {
+    margin: 10px;
+    width: 80px;
+    height: 36px;
+    font-size: 15px;
+    font-weight: bold;
+    color: darkslategray;
+    background-color: #f0f0f0;
+    border: 2px solid grey;
+    border-radius: 10px;
+    outline: none;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    border-width: 3px;
+    background-color: #ffffff;
+}
+
+button:active {
+    width: 76px;
+    height: 35px;
+    background-color: #e8e8e8;
+}
+
+button.recording {
+    color: darkred;
+    border-color: firebrick;
+}
