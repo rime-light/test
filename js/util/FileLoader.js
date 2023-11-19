@@ -55,8 +55,7 @@ export default class FileLoader {
             })
         });
     }
-    static saveAsCanvas(img, x, y, w, h, options) {
-        options = options ?? {};
+    static saveAsCanvas(img, x, y, w, h, options = {}) {
         x *= this.px;
         y *= this.px;
         w *= this.px;

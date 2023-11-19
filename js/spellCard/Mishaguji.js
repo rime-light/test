@@ -14,9 +14,6 @@ export default class Mishaguji extends SpellCard {
         this.way = 60;
         this.nextWave(0);
     }
-    nextFrame() {
-        super.nextFrame();
-    }
     createSingle(angle) {
         angle -= PI / 2;
         const {way, basePos} = this;

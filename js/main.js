@@ -3,8 +3,10 @@ import FileLoader from "./util/FileLoader.js";
 import Timer from "./util/Timer.js";
 import {BaseCheck} from "./item/Entity.js"
 import {spellList} from "./item/SpellList.js";
-import SelectPage from "./page/SelectPage.js";
 import Recorder from "./util/Recorder.js";
+import WaitingPage from "./page/WaitingPage.js";
+import SelectPage from "./page/SelectPage.js";
+import InGamePage from "./page/InGamePage.js";
 
 class Game {
     constructor() {
@@ -48,7 +50,6 @@ class Game {
             painter[id] = ctx;
         });
         this.painter = painter;
-        this.select = new SelectPage(painter.text);
         changeSize();
 
         document.getElementById("options").addEventListener("keydown", (event) => {
@@ -103,19 +104,16 @@ class Game {
                 recordButton.innerHTML = "录制";
                 recordButton.classList.remove("recording");
             } else {
-                Recorder.start();
                 this.copyForRecord();
+                Recorder.start();
                 recordButton.innerHTML = "停止";
                 recordButton.classList.add("recording");
             }
         });
 
-        painter.text.font = "bold 28px system-ui";
-        painter.text.textAlign = "center";
-        painter.text.lineWidth = 1;
-        painter.text.fillStyle = "lightblue";
-        painter.text.strokeStyle = "gray"
-        this.write("等待加载资源完毕...", true);
+        this.inGame = null;
+        let waitingPage = new WaitingPage(painter.text);
+        waitingPage.wait();
 
         playerStyle = [];
         bulletStyle = {};
@@ -159,8 +157,8 @@ class Game {
             bulletStyle.glow = this.createBulletStyleList(img, 0, 0, 4, 4, 2, 4, 64, false);
         });
         FileLoader.loadList(() => {
-            this.write("", true);
-            this.select.init(localStorage.getItem("lastPlay"));
+            let selectPage = new SelectPage(painter.text);
+            selectPage.init(localStorage.getItem("lastPlay"));
             window.addEventListener("keydown", (event) => {
                 let key = event.key;
                 if (key.length < 2) key = key.toUpperCase();
@@ -172,7 +170,7 @@ class Game {
                             this.moveVCount++;
                             player.direction.y = -1;
                         } else {
-                            this.select.prevLine();
+                            selectPage.prevLine();
                         }
                         break;
                     case "ArrowDown":
@@ -180,7 +178,7 @@ class Game {
                             this.moveVCount++;
                             player.direction.y = 1;
                         } else {
-                            this.select.nextLine();
+                            selectPage.nextLine();
                         }
                         break;
                     case "ArrowLeft":
@@ -188,7 +186,7 @@ class Game {
                             this.moveHCount++;
                             player.direction.x = -1;
                         } else {
-                            this.select.prevPage();
+                            selectPage.prevPage();
                         }
                         break;
                     case "ArrowRight":
@@ -196,7 +194,7 @@ class Game {
                             this.moveHCount++;
                             player.direction.x = 1;
                         } else {
-                            this.select.nextPage();
+                            selectPage.nextPage();
                         }
                         break;
                     case "Shift":
@@ -208,8 +206,9 @@ class Game {
                         if (this.playing) {
                             if (this.paused) this.pauseToggle();
                         } else {
-                            localStorage.setItem("lastPlay", this.select.cardId());
-                            this.init();
+                            let cardId = selectPage.cardId();
+                            localStorage.setItem("lastPlay", cardId);
+                            this.init(cardId);
                         }
                         break;
                     case "Escape":
@@ -219,15 +218,14 @@ class Game {
                         break;
                     case "R":
                         if (this.playing) {
-                            this.init();
+                            this.init(selectPage.cardId());
                         }
                         break;
                     case "Q":
                         if (this.playing) {
                             this.playing = false;
                             this.gameViewClear();
-                            painter.item.drawImage(background, 0, 0);
-                            this.select.init(localStorage.getItem("lastPlay"));
+                            selectPage.init(localStorage.getItem("lastPlay"));
                         }
                         break;
                     default:
@@ -276,11 +274,9 @@ class Game {
                 if (this.playing) player.diagonalMove = (this.moveVCount > 0 && this.moveHCount > 0);
             });
         }, (err) => {
-            painter.text.fillStyle = "orangered";
-            this.write(`${err.failList.length}个资源加载失败`, true);
+            waitingPage.fail(err.failList.length);
         });
     }
-
     functionBind() {
         this.init = this.init.bind(this);
         this.draw = this.draw.bind(this);
@@ -289,33 +285,20 @@ class Game {
     }
 
     pauseToggle() {
-        this.write("", true);
         if (this.paused) {
             this.paused = false;
+            this.inGame.play();
             requestAnimationFrame(this.calcFrame);
         } else {
             const ctx = this.painter.text;
             this.paused = true;
-            ctx.save();
-            ctx.fillStyle = "#000000af"
-            ctx.fillRect(0, 0, W, H);
-            ctx.restore();
-            this.write("暂停中");
+            this.inGame.pause();
+            this.copyForRecord();
         }
     }
 
     gameViewClear() {
-        this.painter.item.clearRect(0, 0, W, H);
-    }
-
-    write(txt, clear, x, y) {
-        x = x ?? W >> 1;
-        y = y ?? H >> 1;
-        if (clear) this.painter.text.clearRect(0, 0, W, H);
-        if (txt) {
-            this.painter.text.fillText(txt, x, y);
-            this.painter.text.strokeText(txt, x, y);
-        }
+        this.painter.item.drawImage(background, 0, 0);
     }
 
     createPlayerStyle(img) {
@@ -365,8 +348,8 @@ class Game {
         this.animations = animations;
     }
 
-    init() {
-        this.write("", true);
+    init(cardId) {
+        this.inGame = new InGamePage(this.painter.text);
         this.playing = false;
         this.paused = false;
         this.biuTime = 0;
@@ -388,8 +371,10 @@ class Game {
         this.animationInit();
         bullets = [];
         bulletList = [];
-        this.spellCard = spellList[this.select.cardId()].render();
+        this.spellCard = spellList[cardId].render();
         setTimeout(() => {
+            this.inGame.setCard(spellList[cardId]);
+            this.inGame.play();
             this.playing = true;
             requestAnimationFrame(this.calcFrame);
         }, 50);
@@ -399,7 +384,7 @@ class Game {
         if (!Recorder.recording) return;
         const ctx = this.painter.record;
         this.displayList.forEach((canvas) => ctx.drawImage(canvas, 0, 0));
-        requestAnimationFrame(this.copyForRecord);
+        // requestAnimationFrame(this.copyForRecord);
     }
 
     calcFrame(timestamp) {
@@ -450,10 +435,13 @@ class Game {
         });
         if (biu) {
             this.biuTime = 6;
+            this.inGame.stop(this.spellCard.globalFrame);
         }
         bulletList = [...current, ...bullets];
         bullets = [];
         this.draw();
+        this.inGame.period(this.spellCard.globalFrame);
+        this.copyForRecord();
         requestAnimationFrame(this.calcFrame);
     }
 
@@ -479,7 +467,6 @@ class Game {
         const {painter, animations} = this;
         const ctx = painter.item;
         this.gameViewClear();
-        ctx.drawImage(background, 0, 0);
         if (this.biuTime > 0) {
             ctx.fillStyle = "#ff00003f";
             ctx.fillRect(0, 0, W, H);

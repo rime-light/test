@@ -1,12 +1,14 @@
 import {spellList} from "../item/SpellList.js";
+import Page from "./Page.js";
 
-export default class SelectPage {
-    constructor(ctx) {
-        this.ctx = ctx;
+export default class SelectPage extends Page {
+    constructor(ctx, updateCallback) {
+        super(ctx);
         this.line = 0;
         this.page = 0;
         this.itemCount = spellList.length;
         this.pageCount = Math.ceil(this.itemCount / 8);
+        this.callback = updateCallback;
     }
 
     cardId() {
@@ -59,16 +61,14 @@ export default class SelectPage {
     update() {
         let ctx = this.ctx;
         ctx.save();
+        this.clear();
+        this.fill();
         ctx.font = "bold 16px 宋体";
-        ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = "#0000005f";
-        ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = "#e8e8af1f";
         ctx.fillRect(0, Math.floor(this.line * H / 9 + 4 * H / 63), W, Math.floor(2 * H / 27));
         ctx.fillStyle = "#7fd9d9";
         ctx.fillText(spellList[this.cardId()].name, W >> 1, (this.line + 1) * H / 9);
         ctx.fillStyle = "#e8e8af";
-        ctx.strokeStyle = "black";
         for (let i = 0; i < 8; i++) {
             let k = (this.page << 3) + i;
             if (k >= this.itemCount) break;
@@ -79,5 +79,6 @@ export default class SelectPage {
         ctx.fillStyle = "white";
         ctx.fillText(`页面 ${this.page + 1}/${this.pageCount}`, W >> 1, H - 6);
         ctx.restore();
+        this.callback && this.callback();
     }
 }
