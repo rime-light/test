@@ -1,11 +1,76 @@
+const PI = Math.PI;
 const
-    PI = Math.PI,
+    /**
+     * 帧率
+     * @type {number}
+     */
     FPS = 60,
-    W = 384, H = 448,
+    /**
+     * 画面宽度
+     * @type {number}
+     */
+    W = 384,
+    /**
+     * 画面高度
+     * @type {number}
+     */
+    H = 448,
+    /**
+     * 斜向移动比率
+     * @type {number}
+     */
     diagonalRate = 1 / Math.sqrt(2),
-    limitDistance = { top: 24, bottom: 16, left: 8, right: 8 };
-let background, hitbox, playerStyle, bulletStyle;
-let player, bullets, bulletList = [];
+    /**
+     * 角色移动版边限制
+     * @type {{top: number, left: number, bottom: number, right: number}}
+     */
+    limitDistance = { top: 24, bottom: 16, left: 8, right: 8 },
+    /**
+     * 符卡字体
+     * @type {string}
+     */
+    spellFont = `"Times New Roman","华文中宋",monospace`;
+
+let background, hitbox, ascii, playerStyle, bulletStyle;
+let
+    /**
+     * 动画列表
+     * @type {Object.<string,CanvasAnimation>}
+     */
+    animations,
+    /**
+     * 自机
+     * @type {Player}
+     */
+    player,
+    /**
+     * 附加弹幕列表
+     * @type {Bullet[]}
+     */
+    bullets,
+    /**
+     * 弹幕列表
+     * @type {Bullet[]}
+     */
+    bulletList = [];
+const Sound = {
+    audioList: new Map(),
+    add(name, audio) {
+        this.audioList.set(name, audio);
+    },
+    play(name) {
+        if (!this.audioList.has(name)) return;
+        let audio = this.audioList.get(name);
+        audio.currentTime = 0;
+        audio.play();
+    }
+};
+
+/**
+ * @typedef {Object} Point
+ * @property {number} x
+ * @property {number} y
+ */
 
 function r(org, play) {
     play = play ?? 2;

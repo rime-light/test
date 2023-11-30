@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard, {createWay} from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard, {createWay} from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color16, Color8, Size} from "../item/Style.js";
 
@@ -31,14 +32,11 @@ export default class DreamSealWabi extends SpellCard {
         Timer.wait(() => this.nextWave(0), 4 * this.waitTime.scatter);
 
     }
-    nextFrame() {
-        super.nextFrame();
-    }
     createMiddle() {
         const basePos = this.basePos, {middle: way} = this.value;
         let angle = posAngle(basePos, player.pos, PI / 2) - randomInt(1, way) * 2 * PI / way;
         for (let i = 0; i < way; i++) {
-            let bullet = new Entity({
+            let bullet = new Bullet({
                 size: Size.middle,
                 style: bulletStyle.middle[Color8.white],
                 pos: {...basePos},
@@ -63,7 +61,7 @@ export default class DreamSealWabi extends SpellCard {
         for (let i = 0; i < small; i++) {
             for (let j = 0; j < small; j++) {
                 // break;
-                let bullet = new Entity({
+                let bullet = new Bullet({
                     size: Size.paper,
                     style: bulletStyle.paper[Color16.white],
                     pos: {...pos},

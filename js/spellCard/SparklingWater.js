@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard, {createWay} from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard, {createWay} from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color8, Size} from "../item/Style.js";
 
@@ -18,24 +19,7 @@ export default class SparklingWater extends SpellCard {
                 row: 20
             }
         });
-        this.wave = 0;
-        this.nextWave();
-    }
-    nextFrame() {
-        super.nextFrame();
-        if (this.frameEqual(450)) {
-            this.nextWave();
-            return;
-        }
-        if (this.frameEqual(1)) {
-            let range = H / this.value.row;
-            this.createSin(0, {
-                priority: this.wave,
-                offsetX: PI / 2,
-                offsetY: random(-1, 1) * range
-            });
-        }
-        if (this.frameEqual(340)) this.createShootTo(0);
+        this.nextWave(0);
     }
     sinNext(step, other) {
         if (step >= this.value.small) return;
@@ -45,7 +29,7 @@ export default class SparklingWater extends SpellCard {
             dir = ((priority + row) & 1) === 1;
         for (let i = 0; i < 2; i++) {
             let upDown = (i === 0);
-            let bullet = new Entity({
+            let bullet = new Bullet({
                 size: Size.water,
                 style: bulletStyle.water,
                 lighter: true,
@@ -74,7 +58,7 @@ export default class SparklingWater extends SpellCard {
         let way = 9, pos = this.basePos;
         let angle = posAngle(pos, player.pos);
         for (let i = 0; i < way; i++) {
-            let bullet = new Entity({
+            let bullet = new Bullet({
                 size: Size.middle,
                 style: bulletStyle.middle[Color8.blue],
                 pos: {...pos},
@@ -88,8 +72,15 @@ export default class SparklingWater extends SpellCard {
         }
         Timer.wait(() => this.createShootTo(step + 1), this.waitTime.middle);
     }
-    nextWave() {
+    nextWave(step) {
         super.nextWave();
-        this.wave++;
+        let range = H / this.value.row;
+        this.createSin(0, {
+            priority: step,
+            offsetX: PI / 2,
+            offsetY: random(-1, 1) * range
+        });
+        Timer.wait(() => this.createShootTo(0), 300);
+        Timer.wait(() => this.nextWave(step + 1), 380);
     }
 }

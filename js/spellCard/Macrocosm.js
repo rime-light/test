@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color8, Size} from "../item/Style.js";
 
@@ -20,14 +21,11 @@ export default class Macrocosm extends SpellCard {
         });
         this.nextWave(0);
     }
-    nextFrame() {
-        super.nextFrame();
-    }
     createSingle(dir, speed, up) {
         speed *= random(0.95, 1.05);
         let limit = speed * up;
         const pos = this.basePos, {speedup, show, leave} = this.waitTime;
-        let bullet = new Entity({
+        let bullet = new Bullet({
             size: Size.glow,
             style: bulletStyle.glow[Color8.blue],
             lighter: true,

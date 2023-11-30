@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard, {createWay} from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard, {createWay} from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color16, Size} from "../item/Style.js";
 
@@ -25,12 +26,9 @@ export default class OrleansDolls extends SpellCard {
         });
         this.nextWave(0);
     }
-    nextFrame() {
-        super.nextFrame();
-    }
     createSingle(pos, angle, speed, notChange) {
         const {level, maxLevel, speedLevel, speedSp, spLevel} = this.value, color = this.value.color[level];
-        let bullet = new Entity({
+        let bullet = new Bullet({
             size: Size.scale,
             style: bulletStyle.scale[color],
             pos: {...pos},

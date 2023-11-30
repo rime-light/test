@@ -3,7 +3,7 @@ export default class Page {
         options = {
             ...{
                 textAlign: "center",
-                lineWidth: 1,
+                lineWidth: 2,
                 strokeStyle: "#808080"
             }, ...options
         };
@@ -34,8 +34,8 @@ export default class Page {
             optionList.forEach((value) => this.ctx[value] = options[value]);
         }
         if (txt) {
-            this.ctx.fillText(txt, x, y);
             stroke && this.ctx.strokeText(txt, x, y);
+            this.ctx.fillText(txt, x, y);
         }
         needSave && this.ctx.restore();
     }

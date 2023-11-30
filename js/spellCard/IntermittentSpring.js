@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard, {createWay} from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard, {createWay} from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color16, Color8, Size} from "../item/Style.js";
 
@@ -26,7 +27,7 @@ export default class IntermittentSpring extends SpellCard {
         let angle = random(-1, 1) * PI / 36 + PI / 2;
         for (let i = 0; i < way; i++) {
             // break;
-            let bullet = new Entity({
+            let bullet = new Bullet({
                 size: Size.middle,
                 style: bulletStyle.middle[Color8.blue],
                 pos: {...basePos},
@@ -59,7 +60,7 @@ export default class IntermittentSpring extends SpellCard {
     createWater(basePos) {
         let angle = random(-1, 1) * PI / 24 - PI / 2,
             baseSpeed = 6.5;
-        let bullet = new Entity({
+        let bullet = new Bullet({
             size: Size.water,
             style: bulletStyle.small[Color16.blue],
             pos: {...basePos},
@@ -92,7 +93,7 @@ export default class IntermittentSpring extends SpellCard {
         const basePos = this.basePos;
         for (let i = 0; i < 2; i++) {
             // break;
-            let bullet = new Entity({
+            let bullet = new Bullet({
                 size: Size.glow,
                 style: bulletStyle.glow[Color8.red],
                 pos: {...basePos},
@@ -119,7 +120,7 @@ export default class IntermittentSpring extends SpellCard {
         for (let i = 0; i < way; i++) {
             // break;
             let posAngle = createWay(angle, way, i);
-            let bullet = new Entity({
+            let bullet = new Bullet({
                 size: Size.scale,
                 style: bulletStyle.scale[Color16.red],
                 pos: {

@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard, {createWay} from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard, {createWay} from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color16, Size} from "../item/Style.js";
 
@@ -18,15 +19,12 @@ export default class ShrineVisits extends SpellCard {
         });
         this.nextWave(0);
     }
-    nextFrame() {
-        super.nextFrame();
-    }
     createSingle(step, other) {
         const {needle, way} = this.value;
         if (step >= needle) return;
         const pos = this.basePos, {angle} = other;
         for (let i = 0; i < way; i++) {
-            let bullet = new Entity({
+            let bullet = new Bullet({
                 size: Size.needle,
                 style: bulletStyle.needle[Color16.red],
                 pos: {...pos},
@@ -50,7 +48,7 @@ export default class ShrineVisits extends SpellCard {
         Timer.wait(() => this.createSingle(step + 1, other), this.waitTime.needle);
     }
     turnToWater(needle) {
-        let bullet = new Entity({
+        let bullet = new Bullet({
             size: Size.water,
             style: bulletStyle.water,
             lighter: true,

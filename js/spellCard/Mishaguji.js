@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard, {createWay} from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard, {createWay} from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color16, Size} from "../item/Style.js";
 
@@ -20,7 +21,7 @@ export default class Mishaguji extends SpellCard {
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < way; j++) {
                 // break;
-                let bullet = new Entity({
+                let bullet = new Bullet({
                     size: Size.rice,
                     style: bulletStyle.rice[Color16.green],
                     pos: {...basePos},

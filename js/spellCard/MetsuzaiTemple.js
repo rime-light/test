@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color16, Color4, Size} from "../item/Style.js";
 
@@ -17,13 +18,10 @@ export default class MetsuzaiTemple extends SpellCard {
         });
         this.nextWave(0);
     }
-    nextFrame() {
-        super.nextFrame();
-    }
     createPaper(step, other) {
         if (step >= 2) return;
         const pos = other.pos;
-        let bullet = new Entity({
+        let bullet = new Bullet({
             size: Size.paper,
             style: bulletStyle.paper[Color16.darkblue],
             pos: {...pos},
@@ -52,7 +50,7 @@ export default class MetsuzaiTemple extends SpellCard {
         pos.x += offsetX;
         pos.y += offsetY;
         this.createPaper(0, { pos });
-        let bullet = new Entity({
+        let bullet = new Bullet({
             size: Size.large,
             style: bulletStyle.large[Color4.blue],
             safe: true,

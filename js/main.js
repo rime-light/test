@@ -1,7 +1,8 @@
 import CanvasAnimation from "./util/Animation.js";
 import FileLoader from "./util/FileLoader.js";
 import Timer from "./util/Timer.js";
-import {BaseCheck} from "./item/Entity.js"
+import Player from "./item/Player.js";
+import {BaseCheck} from "./baseClass/Entity.js"
 import {spellList} from "./item/SpellList.js";
 import Recorder from "./util/Recorder.js";
 import WaitingPage from "./page/WaitingPage.js";
@@ -19,6 +20,7 @@ class Game {
         this.pressed = new Map();
         this.playing = false;
         this.paused = false;
+        this.frameId = null;
 
         let gameBlock = document.getElementById("game");
         gameBlock.style.width = `${W}px`;
@@ -121,6 +123,12 @@ class Game {
             background = img;
             painter.item.drawImage(img, 0, 0);
         });
+        FileLoader.queue(FileLoader.loadOgg, "select", (item) => Sound.add("select", item));
+        FileLoader.queue(FileLoader.loadOgg, "ok", (item) => Sound.add("ok", item));
+        FileLoader.queue(FileLoader.loadOgg, "cancel", (item) => Sound.add("cancel", item));
+        FileLoader.queue(FileLoader.loadOgg, "biu", (item) => Sound.add("biu", item));
+        FileLoader.queue(FileLoader.loadOgg, "success", (item) => Sound.add("success", item));
+        FileLoader.queue(FileLoader.loadOgg, "count_down", (item) => Sound.add("countDown", item));
         FileLoader.queue(FileLoader.loadPng, "player/slow_effect", (img) => {
             let size = 4;
             hitbox = {
@@ -131,6 +139,15 @@ class Game {
         let playerId = "00";
         FileLoader.queue(FileLoader.loadPng, `player/player${playerId}/pl${playerId}`, (img) => {
             playerStyle.push(this.createPlayerStyle(img));
+        });
+        FileLoader.queue(FileLoader.loadPng, "number", (img) => {
+            let numberImage = new Map();
+            let origin = FileLoader.saveAsCanvasList(img, 0, 0, 2, 2, 4, 4);
+            for (let i = 0; i <= 9; i++)
+                numberImage.set(`${i}`, origin[i]);
+            numberImage.set(`/`, origin[10]);
+            numberImage.set(`.`, origin[11]);
+            ascii = numberImage;
         });
         FileLoader.queue(FileLoader.loadPng, `bullet/bullet1`, (img) => {
             let sub = this.createBulletStyleList(img, 8, 13, 2, 2, 1, 4, 32, true);
@@ -157,7 +174,7 @@ class Game {
             bulletStyle.glow = this.createBulletStyleList(img, 0, 0, 4, 4, 2, 4, 64, false);
         });
         FileLoader.loadList(() => {
-            let selectPage = new SelectPage(painter.text);
+            let selectPage = new SelectPage(painter.text, () => this.copyForRecord());
             selectPage.init(localStorage.getItem("lastPlay"));
             window.addEventListener("keydown", (event) => {
                 let key = event.key;
@@ -206,6 +223,7 @@ class Game {
                         if (this.playing) {
                             if (this.paused) this.pauseToggle();
                         } else {
+                            Sound.play("ok");
                             let cardId = selectPage.cardId();
                             localStorage.setItem("lastPlay", cardId);
                             this.init(cardId);
@@ -218,11 +236,13 @@ class Game {
                         break;
                     case "R":
                         if (this.playing) {
+                            Sound.play("ok");
                             this.init(selectPage.cardId());
                         }
                         break;
                     case "Q":
                         if (this.playing) {
+                            Sound.play("cancel");
                             this.playing = false;
                             this.gameViewClear();
                             selectPage.init(localStorage.getItem("lastPlay"));
@@ -287,10 +307,10 @@ class Game {
     pauseToggle() {
         if (this.paused) {
             this.paused = false;
+            // Sound.play("ok");
             this.inGame.play();
-            requestAnimationFrame(this.calcFrame);
+            this.frameId = requestAnimationFrame(this.calcFrame);
         } else {
-            const ctx = this.painter.text;
             this.paused = true;
             this.inGame.pause();
             this.copyForRecord();
@@ -311,13 +331,6 @@ class Game {
             height: FileLoader.size(height)
         };
     }
-
-    createBulletStyle(img, x, y, w, h, size, angle, options) {
-        return {
-            size, angle,
-            image: FileLoader.saveAsCanvas(img, x, y, w, h, { sw: size, sh: size, ...options })
-        };
-    }
     createBulletStyleList(img, x, y, w, h, row, column, size, angle, options) {
         let list = [];
         const imgList = FileLoader.saveAsCanvasList(img, x, y, w, h, row, column, { sw: size, sh: size, ...options });
@@ -331,7 +344,7 @@ class Game {
     }
 
     animationInit() {
-        let animations = {};
+        animations = {};
         animations.playerNormal = new CanvasAnimation(5, 8, true);
         animations.playerLR = new CanvasAnimation(1, 4);
         animations.playerLROver = new CanvasAnimation(5, 4, true);
@@ -345,46 +358,34 @@ class Game {
         animations.playerNormal.run();
         animations.hitboxShow.run();
         animations.hitboxSpin.run();
-        this.animations = animations;
     }
 
     init(cardId) {
         this.inGame = new InGamePage(this.painter.text);
-        this.playing = false;
-        this.paused = false;
         this.biuTime = 0;
         Timer.waiting = [];
-        player = {
+        player = new Player({
             style: playerStyle[0],
             size: 3.0,
-            pos: { x: W / 2, y: H - H / 10 },
-            direction: { x: 0, y: 0 },
             baseSpeed: 4.5,
-            slowSpeed: 1.8,
-            diagonalMove: false,
-            slowMove: false,
-            prev: {
-                direction: 0,
-                slowMove: false
-            }
-        };
+            slowSpeed: 1.8
+        });
         this.animationInit();
         bullets = [];
         bulletList = [];
         this.spellCard = spellList[cardId].render();
-        setTimeout(() => {
-            this.inGame.setCard(spellList[cardId]);
-            this.inGame.play();
-            this.playing = true;
-            requestAnimationFrame(this.calcFrame);
-        }, 50);
+        this.inGame.setCard(spellList[cardId]);
+        this.inGame.play();
+        this.paused = false;
+        this.playing = true;
+        this.frameId !== null && cancelAnimationFrame(this.frameId);
+        this.frameId = requestAnimationFrame(this.calcFrame);
     }
 
     copyForRecord() {
         if (!Recorder.recording) return;
         const ctx = this.painter.record;
         this.displayList.forEach((canvas) => ctx.drawImage(canvas, 0, 0));
-        // requestAnimationFrame(this.copyForRecord);
     }
 
     calcFrame(timestamp) {
@@ -393,34 +394,14 @@ class Game {
             if (!timestamp) timestamp = this.prevTime;
             let interval = 1000 / FPS, delta = timestamp - this.prevTime;
             if (delta < interval) {
-                requestAnimationFrame(this.calcFrame);
+                this.frameId = requestAnimationFrame(this.calcFrame);
                 return;
             }
             this.prevTime = timestamp - delta % interval;
         }
 
-        const stopPlayerAnimation = () => {
-            this.animations.playerNormal.stop();
-            this.animations.playerLR.stop();
-            this.animations.playerLROver.stop();
-        }
-        if (player.prev.direction !== player.direction.x) {
-            stopPlayerAnimation();
-            player.direction.x === 0 ?
-                this.animations.playerNormal.run() : this.animations.playerLR.run();
-        }
-        if (player.prev.slowMove !== player.slowMove)
-            this.animations.hitboxShow.run();
-        player.prev.direction = player.direction.x;
-        player.prev.slowMove = player.slowMove;
-        player.pos.x += player.direction.x * (player.diagonalMove ? diagonalRate : 1) * (player.slowMove ? player.slowSpeed : player.baseSpeed);
-        player.pos.y += player.direction.y * (player.diagonalMove ? diagonalRate : 1) * (player.slowMove ? player.slowSpeed : player.baseSpeed);
-        if (player.pos.x > W - limitDistance.right) player.pos.x = W - limitDistance.right;
-        else if (player.pos.x < limitDistance.left) player.pos.x = limitDistance.left;
-        if (player.pos.y > H - limitDistance.bottom) player.pos.y = H - limitDistance.bottom;
-        else if (player.pos.y < limitDistance.top) player.pos.y = limitDistance.top;
-
         Timer.nextFrame();
+        player.move();
         this.spellCard.nextFrame();
         this.biuTime--;
         let biu = false;
@@ -435,14 +416,15 @@ class Game {
         });
         if (biu) {
             this.biuTime = 6;
+            if (!this.inGame.stopped) Sound.play("biu");
             this.inGame.stop(this.spellCard.globalFrame);
         }
         bulletList = [...current, ...bullets];
         bullets = [];
         this.draw();
-        this.inGame.period(this.spellCard.globalFrame);
+        !this.inGame.stopped && this.inGame.period(this.spellCard.globalFrame);
         this.copyForRecord();
-        requestAnimationFrame(this.calcFrame);
+        this.frameId = requestAnimationFrame(this.calcFrame);
     }
 
     drawBullet(bullet) {
@@ -464,8 +446,7 @@ class Game {
         } else ctx.drawImage(style.image, x(bullet), y(bullet));
     }
     draw() {
-        const {painter, animations} = this;
-        const ctx = painter.item;
+        const ctx = this.painter.item;
         this.gameViewClear();
         if (this.biuTime > 0) {
             ctx.fillStyle = "#ff00003f";

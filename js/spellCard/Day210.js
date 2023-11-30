@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard, {createWay} from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard, {createWay} from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color16, Size} from "../item/Style.js";
 
@@ -18,16 +19,13 @@ export default class Day210 extends SpellCard {
         this.way = 16;
         this.nextWave(0);
     }
-    nextFrame() {
-        super.nextFrame();
-    }
     createSingle(step, other) {
         if (step >= this.value.line) return;
         const {angle} = other;
         const {way, basePos} = this;
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < way; j++) {
-                let bullet = new Entity({
+                let bullet = new Bullet({
                     size: Size.rice,
                     style: bulletStyle.rice[i ? Color16.blue : Color16.green],
                     lighter: true,

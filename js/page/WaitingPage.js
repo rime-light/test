@@ -1,4 +1,4 @@
-import Page from "./Page.js";
+import Page from "../baseClass/Page.js";
 
 export default class WaitingPage extends Page {
     constructor(ctx) {

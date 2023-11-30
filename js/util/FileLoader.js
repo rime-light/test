@@ -8,9 +8,7 @@ export default class FileLoader {
     static loadImg(type, filename, loadedFn, failedFn) {
         let img = new Image();
         img.src = `image/${filename}.${type}`;
-        img.onload = () => {
-            loadedFn(img);
-        }
+        img.onload = () => loadedFn(img);
         img.onerror = () => {
             failedFn && failedFn({
                 fullPath: img.src,
@@ -25,6 +23,21 @@ export default class FileLoader {
     }
     static loadJpg(filename, loadedFn, failedFn) {
         FileLoader.loadImg("jpg", filename, loadedFn, failedFn);
+    }
+    static loadOgg(filename, loadedFn, failedFn) {
+        let sound = new Audio(`sound/${filename}.ogg`);
+        sound.onloadedmetadata = () => {
+            loadedFn(sound);
+        }
+        sound.onerror = () => {
+            failedFn && failedFn({
+                fullPath: sound.src,
+                filename,
+                loadedFn,
+                failedFn
+            });
+        };
+        sound.load();
     }
     static queue(loaderFn, filename, loadedFn) {
         if (this.loading) return false;
@@ -61,10 +74,8 @@ export default class FileLoader {
         w *= this.px;
         h *= this.px;
         let sw = options.sw ?? w, sh = options.sh ?? h;
-        let screen = document.createElement("canvas");
+        let screen = new OffscreenCanvas(sw, sh);
         let painter = screen.getContext("2d");
-        screen.width = sw;
-        screen.height = sh;
         painter.save();
         options.opacity && (painter.globalAlpha = options.opacity);
         painter.drawImage(img, x, y, w, h, 0, 0, sw, sh);

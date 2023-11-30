@@ -1,39 +1,44 @@
+/**
+ * @classdesc 实体类
+ * @property {number} frame - 实体当前时间(帧)
+ * @property {number} size - 判定大小
+ * @property {Object} style - 样式
+ * @property {Point} pos - 当前位置
+ * @property {Point} basePos - 基础位置
+ * @property {number} baseSpeed - 移动速度
+ * @property {Object} transform - 图像变换起始状态
+ * @property {Object} transformValue - 图像变换当前状态
+ */
 export default class Entity {
     constructor(props) {
         this.frame = 0;
         this.size = 0;
-        this.safe = false;
         this.style = null;
-        this.alive = true;
-        this.lighter = false;
-        this.top = false;
         this.pos = { x: 0, y: 0 };
-        this.speed = { x: 0, y: 0 };
-        this.basePos = 0;
+        this.basePos = { x: 0, y: 0 };
         this.baseSpeed = 0;
-        this.angle = 0;
-        this.change = 0;
         this.transform = {};
         Object.assign(this, props);
         this.transformValue = {...this.transform};
     }
-    move() {
-        return false;
-    }
+
+    /**
+     * 实体移动
+     */
+    move() {}
+
+    /**
+     * 判断是否应被清除
+     * @returns {boolean}
+     */
     cleared() {
         return false;
     }
-    setMove(fn) {
-        let moveFn = () => {
-            this.frame++;
-            fn(this);
-        };
-        this.move = moveFn.bind(this);
-    }
-    setClearedCheck(fn) {
-        let clearedFn = () => fn(this);
-        this.cleared = clearedFn.bind(this);
-    }
+
+    /**
+     * 清除图像变换
+     * @param {...string} names - 变换名称
+     */
     clearTransform(...names) {
         if (!names.length) {
             this.transform = {};
@@ -45,33 +50,36 @@ export default class Entity {
             delete this.transformValue[name];
         });
     }
+
+    /**
+     * 图像变换动画
+     * @param {string} name - 变换名称
+     * @param {number} totalFrame - 总时长
+     * @param {number} endValue - 变换结束状态
+     * @param {number} currentFrame - 当前时间
+     * @returns {number}
+     */
     animation(name, totalFrame = 10, endValue = 1, currentFrame = this.frame) {
         if (currentFrame < 0 || currentFrame > totalFrame) return -1;
         let startValue = this.transform[name];
         this.transformValue[name] = startValue + (endValue - startValue) * currentFrame / totalFrame;
         return currentFrame === totalFrame ? 0 : 1;
     }
-    speedXY(setAngle) {
-        this.pos.x += this.speed.x;
-        this.pos.y += this.speed.y;
-        if (setAngle) this.angle = posAngle({x: 0, y: 0}, this.speed);
-    }
-    speedAngle(angle = this.angle, speed = this.baseSpeed) {
-        this.pos.x += speed * Math.cos(angle);
-        this.pos.y += speed * Math.sin(angle);
-    }
-    angleChange(origin, reverse) {
-        origin = origin ?? this.basePos;
-        this.angle = posAngle(origin, this.pos, this.angle);
-        if (reverse) this.angle += PI;
-    }
-    shootTo(pos) {
-        pos = pos ?? player.pos;
-        this.angleChange(pos, true);
-    }
+
+    /**
+     * 当前帧匹配
+     * @param {number} value - 帧
+     * @returns {boolean}
+     */
     frameMatch(value) {
-        return this.frame % value === 0;
+        return !(this.frame % value);
     }
+
+    /**
+     * 当前帧相等
+     * @param {number} value - 帧
+     * @returns {boolean}
+     */
     frameEqual(value) {
         return this.frame === value;
     }

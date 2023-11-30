@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color16, Color4, Size} from "../item/Style.js";
 
@@ -19,9 +20,6 @@ export default class IllusionSeeker extends SpellCard {
         this.timer = [];
         this.nextWave(0);
         Timer.wait(() => this.openEye(true), 255);
-    }
-    nextFrame() {
-        super.nextFrame();
     }
     openEye(open) {
         this.redEye = open;
@@ -43,7 +41,7 @@ export default class IllusionSeeker extends SpellCard {
     createFirearm(step, other) {
         if (step >= 2) return;
         const {pos, fast, color} = other;
-        let bullet = new Entity({
+        let bullet = new Bullet({
             size: Size.firearm,
             style: bulletStyle.firearm[color],
             pos: {...pos},
@@ -54,7 +52,7 @@ export default class IllusionSeeker extends SpellCard {
             if (this.redEye) {
                 item.safe = true;
                 item.transformValue.opacity = 0.5;
-                item.speedAngle(color === Color16.red || !fast ? PI : 0, 0.5);
+                item.speedAngle(color === Color16.red || !fast ? PI : 0, 0.4);
                 if (item.pos.x < 0) item.pos.x += W;
                 if (item.pos.x > W) item.pos.x -= W;
             } else {
@@ -70,7 +68,7 @@ export default class IllusionSeeker extends SpellCard {
         this.createFirearm(step + 1, other);
     }
     createLarge(pos, dir, color) {
-        let bullet = new Entity({
+        let bullet = new Bullet({
             size: Size.large,
             style: bulletStyle.large[color],
             safe: true,

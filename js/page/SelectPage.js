@@ -1,5 +1,5 @@
 import {spellList} from "../item/SpellList.js";
-import Page from "./Page.js";
+import Page from "../baseClass/Page.js";
 
 export default class SelectPage extends Page {
     constructor(ctx, updateCallback) {
@@ -21,7 +21,7 @@ export default class SelectPage extends Page {
             id = 0;
         this.page = id >> 3;
         this.line = id - (this.page << 3);
-        this.update();
+        this.update(true);
     }
 
     finalPage() {
@@ -58,12 +58,12 @@ export default class SelectPage extends Page {
         this.update();
     }
 
-    update() {
+    update(silent) {
         let ctx = this.ctx;
         ctx.save();
         this.clear();
         this.fill();
-        ctx.font = "bold 16px 宋体";
+        ctx.font = `16px ${spellFont}`;
         ctx.fillStyle = "#e8e8af1f";
         ctx.fillRect(0, Math.floor(this.line * H / 9 + 4 * H / 63), W, Math.floor(2 * H / 27));
         ctx.fillStyle = "#7fd9d9";
@@ -79,6 +79,7 @@ export default class SelectPage extends Page {
         ctx.fillStyle = "white";
         ctx.fillText(`页面 ${this.page + 1}/${this.pageCount}`, W >> 1, H - 6);
         ctx.restore();
+        !silent && Sound.play("select");
         this.callback && this.callback();
     }
 }

@@ -1,5 +1,6 @@
-import Entity, {BaseCheck} from "../item/Entity.js";
-import SpellCard, {createWay} from "./SpellCard.js";
+import {BaseCheck} from "../baseClass/Entity.js";
+import Bullet from "../item/Bullet.js";
+import SpellCard, {createWay} from "../baseClass/SpellCard.js";
 import Timer from "../util/Timer.js";
 import {Color8, Size} from "../item/Style.js";
 
@@ -17,15 +18,12 @@ export default class ForKilling extends SpellCard {
         });
         this.nextWave(0);
     }
-    nextFrame() {
-        super.nextFrame();
-    }
     createWave(angle, dir) {
         const basePos = {...this.basePos}, {wave: way} = this.value;
         basePos.x += randomInt(-50, 50);
         basePos.y -= randomInt(10, 30);
         for (let i = 0; i < way; i++) {
-            let bullet = new Entity({
+            let bullet = new Bullet({
                 size: Size.glow,
                 style: bulletStyle.glow[Color8.red],
                 lighter: true,
@@ -45,7 +43,7 @@ export default class ForKilling extends SpellCard {
         }
     }
     createMiddle(glowBullet) {
-        let bullet = new Entity({
+        let bullet = new Bullet({
             size: Size.middle,
             style: bulletStyle.middle[Color8.blue],
             top: true,
